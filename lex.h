@@ -9,7 +9,7 @@ using TokenValue = std::variant<std::monostate, int, std::string>;
 
 enum TokenType {
 	// Single character tokens
-	OPEN_BRACE,	CLOSE_BRACE, OPEN_PAREN, CLOSE_PAREN, SEMICOLON,
+	OPEN_BRACE, CLOSE_BRACE, OPEN_PAREN, CLOSE_PAREN, SEMICOLON,
 
 	// Literals
 	INT, IDENTIFIER,

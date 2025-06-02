@@ -1,10 +1,10 @@
 #include "lex.h"
 
-#include <filesystem>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <stdexcept>
+#include <iostream>
 
 bool is_numeric(char token) {	
 	if (token >= 48 && token <= 57) {
@@ -14,15 +14,18 @@ bool is_numeric(char token) {
 	return false;
 }
 
-int lex_int(int file_index, std::ifstream& file) {
-	int cur_index = file_index + 1;
+int lex_int(int* file_index, std::ifstream& file) {
+	int cur_index = *file_index + 1;
+	int init_file_index = *file_index;
 	while (is_numeric(file.peek())) {
 		cur_index++;
+		(*file_index)++;
+		file.get();
 	}
 
-	file.seekg(file_index);
-	std::string num; num.resize(cur_index - file_index);
-	file.read(&num[0], cur_index - file_index);
+	file.seekg(init_file_index);
+	std::string num; num.resize(cur_index - init_file_index);
+	file.read(&num[0], cur_index - init_file_index);
 
 	return std::stoi(num);
 }
@@ -35,15 +38,20 @@ bool is_alphabetic(char token) {
 	return false;
 }
 
-std::string lex_word(int file_index, std::ifstream& file) {
-	int cur_index = file_index + 1;
+std::string lex_word(int* file_index, std::ifstream& file) {
+	int cur_index = *file_index + 1;
+	int init_file_index = *file_index;
 	while (is_alphabetic(file.peek())) {
 		cur_index++;
+		(*file_index)++;
+		file.get();
 	}
 
-	file.seekg(file_index);
-	std::string word; word.resize(cur_index - file_index);
-	file.read(&word[0], cur_index - file_index);
+	file.seekg(init_file_index);
+	std::string word; word.resize(cur_index - init_file_index);
+	file.read(&word[0], cur_index - init_file_index);
+
+	std::cout << "word returned: " << word << '\n';
 
 	return word;
 }
@@ -59,6 +67,7 @@ std::vector<Token> lex(const std::string& file_path) {
 
 	while (c_file) {
 		char cur_char = c_file.get();
+		std::cout << "file index: " << file_index << " char: " << cur_char << '\n';
 
 		if (cur_char == EOF) { // End of file, return collected tokens
 			break;
@@ -81,10 +90,11 @@ std::vector<Token> lex(const std::string& file_path) {
 					break;
 			}
 		} else if (is_numeric(cur_char)) { // Integer literals
-			int int_literal = lex_int(file_index, c_file);
+			std::cout << "numeric char: " << cur_char << '\n';
+			int int_literal = lex_int(&file_index, c_file);
 			file_tokens.push_back(Token(INT, int_literal));
 		} else if (is_alphabetic(cur_char) || is_alphabetic(cur_char)) {
-			std::string word = lex_word(file_index, c_file);
+			std::string word = lex_word(&file_index, c_file);
 
 			if (word == "return") {
 				file_tokens.push_back(Token(RETURN, std::monostate()));
