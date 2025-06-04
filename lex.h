@@ -18,8 +18,7 @@ enum TokenType {
 	RETURN, INT_TYPE,
 };
 
-class Token {
-public:
+struct Token {
 	TokenType token_type;
 	TokenValue literal;
 
