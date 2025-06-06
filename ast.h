@@ -2,7 +2,17 @@
 #define AST_H
 
 #include <memory>
+#include <stdexcept>
 #include <string>
+#include <vector>
+
+// I want to decouple the parser from the lexer, so I define types here
+enum class VariableType {
+    INT,
+    VOID
+};
+
+VariableType parse_type(const std::string& type);
 
 // Base struct for expression nodes
 struct ExprAST {
@@ -14,6 +24,13 @@ struct IntLiteralExpr : public ExprAST {
     int value;
 
     explicit IntLiteralExpr(int value) : value(value) {};
+};
+
+// Variable node as an *expression* (like 'return x')
+struct VariableExpr : public ExprAST {
+    std::string name;
+
+    explicit VariableExpr(std::string name) : name(std::move(name)) {};
 };
 
 // Base struct for statement nodes
@@ -28,12 +45,24 @@ struct ReturnStmt : public StmtAST {
     explicit ReturnStmt(std::unique_ptr<ExprAST> expr) : expression(std::move(expr)) {};
 };
 
-// Node for a function declaration
-struct FunctionDecl {
+struct DeclAST {
+    virtual ~DeclAST() = default;
+};
+
+struct VariableDeclAST : public DeclAST {
+    VariableType type;
     std::string name;
+
+    VariableDeclAST(VariableType type, std::string name) : type(type), name(std::move(name)) {};
+};
+
+// Node for a function declaration
+struct FunctionDecl : public DeclAST {
+    std::string name;
+    std::vector<std::unique_ptr<VariableDeclAST>> parameters;
     std::unique_ptr<StmtAST> body; // For now, the body of a function is just one statement (return)
 
-    FunctionDecl(std::string name, std::unique_ptr<StmtAST> body) : name(std::move(name)), body(std::move(body)) {};
+    FunctionDecl(std::string name, std::vector<std::unique_ptr<VariableDeclAST>> params, std::unique_ptr<StmtAST> body) : name(std::move(name)), parameters(std::move(params)), body(std::move(body)) {};
 };
 
 #endif

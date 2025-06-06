@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "ast.h"
 #include "lex.h"
+
 #include <memory>
 #include <stdexcept>
 
@@ -27,35 +28,59 @@ bool Parser::is_at_end() {
     return current_token >= tokens.size();
 }
 
-std::unique_ptr<ExprAST> Parser::parse_expression() {
-    if (check(INT)) {
-        Token int_token = advance();
-        return std::make_unique<IntLiteralExpr>(IntLiteralExpr(std::get<int>(int_token.literal)));
+std::vector<std::unique_ptr<VariableDeclAST>> Parser::parse_func_parameters() {
+    consume(TokenType::OPEN_PAREN, "Incorrect function definition: Check parentheses");
+
+    std::vector<std::unique_ptr<VariableDeclAST>> parameters;
+    Token next_token = advance();
+    while(next_token.token_type != TokenType::CLOSE_PAREN) {
+        std::string type_name = std::get<std::string>(next_token.literal);
+        next_token = advance();
+        std::string variable_name = std::get<std::string>(next_token.literal);
+        VariableType variable_type = parse_type(type_name);
+
+        parameters.push_back(std::make_unique<VariableDeclAST>(variable_type, variable_name));
+
+        next_token = advance();
+
+        if (next_token.token_type == TokenType::COMMA) {
+            next_token = advance();
+        }
     }
 
-    throw new std::runtime_error("Expected an expression");
+    return parameters;
+}
+
+std::unique_ptr<ExprAST> Parser::parse_expression() {
+    if (check(TokenType::INT)) {
+        Token int_token = advance();
+        return std::make_unique<IntLiteralExpr>(std::get<int>(int_token.literal));
+    }
+
+    throw std::runtime_error("Expected an expression");
 }
 
 std::unique_ptr<StmtAST> Parser::parse_statement() {
-    if (check(RETURN)) {
+    if (check(TokenType::RETURN)) {
         advance(); // Consume the return token
         auto expr = parse_expression();
-        consume(SEMICOLON, "Expected 'j' after return value");
-        return std::make_unique<StmtAST>(ReturnStmt(std::move(expr)));
+        consume(TokenType::SEMICOLON, "Expected ';' after return value");
+        return std::make_unique<ReturnStmt>(std::move(expr));
     }
 
-    throw new std::runtime_error("Expected a statement");
+    throw std::runtime_error("Expected a statement");
 }
 
 std::unique_ptr<FunctionDecl> Parser::parse_function() {
     // Assumes only the standard main function for now
-    consume(INT_TYPE, "Expected return value of type 'int'");
-    std::string func_name = std::get<std::string>(consume(IDENTIFIER, "Incorrect function definition: Check function identifier").literal);
-    consume(OPEN_PAREN, "Incorrect function definition: Check parentheses");
-    consume(CLOSE_PAREN, "Incorrect function definition: Check parentheses");
-    consume(OPEN_BRACE, "Incorrect function definition: Check braces");
+    consume(TokenType::INT_TYPE, "Expected return value of type 'int'");
+    std::string func_name = std::get<std::string>(consume(TokenType::IDENTIFIER, "Incorrect function definition: Check function identifier").literal);
+    std::vector<std::unique_ptr<VariableDeclAST>> func_parameters = parse_func_parameters();
+    consume(TokenType::OPEN_BRACE, "Incorrect function definition: Check braces");
 
     auto statement = parse_statement(); // Assume the function has only one statement for now (the return statement)
 
-    return std::make_unique<FunctionDecl>(FunctionDecl(func_name, std::move(statement)));
+    consume(TokenType::CLOSE_BRACE, "Incoreect function definition: Check braces");
+
+    return std::make_unique<FunctionDecl>(FunctionDecl(func_name, std::move(func_parameters), std::move(statement)));
 }

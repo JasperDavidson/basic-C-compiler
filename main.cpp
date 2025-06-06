@@ -1,4 +1,8 @@
 #include "lex.h"
+#include "ast.h"
+#include "parser.h"
+
+#include <memory>
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
@@ -19,6 +23,14 @@ int main(int argc, char** argv) {
 			std::cout << token.token_type << '\n';
 		}
 	} catch (const std::runtime_error& e) {
-		std::cerr << "Exception caught: " << e.what() << std::endl;
+		std::cerr << "Exception caught: '" << e.what() << "'" << std::endl;
+	}
+
+	Parser parser(source_tokens);
+	
+	try {
+		std::unique_ptr<FunctionDecl> main_func = parser.parse();
+	} catch (const std::runtime_error& e) {
+		std::cerr << "Exception caught: '" << e.what() << "'" << std::endl;
 	}
 }

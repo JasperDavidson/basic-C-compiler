@@ -74,34 +74,37 @@ std::vector<Token> lex(const std::string& file_path) {
 		} else if (!is_alphabetic(cur_char) && ! is_numeric(cur_char)) { // Single character tokens
 			switch (cur_char) {
 				case '{':
-					file_tokens.push_back(Token(OPEN_BRACE, std::monostate()));
+					file_tokens.push_back(Token(TokenType::OPEN_BRACE, std::monostate()));
 					break;
 				case '}':
-					file_tokens.push_back(Token(CLOSE_BRACE, std::monostate()));
+					file_tokens.push_back(Token(TokenType::CLOSE_BRACE, std::monostate()));
 					break;
 				case '(':
-					file_tokens.push_back(Token(OPEN_PAREN, std::monostate()));
+					file_tokens.push_back(Token(TokenType::OPEN_PAREN, std::monostate()));
 					break;
 				case ')':
-					file_tokens.push_back(Token(CLOSE_PAREN, std::monostate()));
+					file_tokens.push_back(Token(TokenType::CLOSE_PAREN, std::monostate()));
 					break;
 				case ';':
-					file_tokens.push_back(Token(SEMICOLON, std::monostate()));
+					file_tokens.push_back(Token(TokenType::SEMICOLON, std::monostate()));
+					break;
+				case ',':
+					file_tokens.push_back(Token(TokenType::COMMA, std::monostate()));
 					break;
 			}
 		} else if (is_numeric(cur_char)) { // Integer literals
 			std::cout << "numeric char: " << cur_char << '\n';
 			int int_literal = lex_int(&file_index, c_file);
-			file_tokens.push_back(Token(INT, int_literal));
+			file_tokens.push_back(Token(TokenType::INT, int_literal));
 		} else if (is_alphabetic(cur_char) || is_alphabetic(cur_char)) {
 			std::string word = lex_word(&file_index, c_file);
 
 			if (word == "return") {
-				file_tokens.push_back(Token(RETURN, std::monostate()));
+				file_tokens.push_back(Token(TokenType::RETURN, std::monostate()));
 			} else if (word == "int") {
-				file_tokens.push_back(Token(INT_TYPE, std::monostate()));
+				file_tokens.push_back(Token(TokenType::INT_TYPE, std::monostate()));
 			} else {
-				file_tokens.push_back(Token(IDENTIFIER, word));
+				file_tokens.push_back(Token(TokenType::IDENTIFIER, word));
 			}
 		}
 

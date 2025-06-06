@@ -6,7 +6,7 @@
 
 class Parser {
 public:
-    explicit Parser(std::vector<Token> tokens) : tokens(std::move(tokens)) {};
+    explicit Parser(const std::vector<Token>& tokens) : tokens(std::move(tokens)) {};
 
     std::unique_ptr<FunctionDecl> parse();
       
@@ -27,6 +27,9 @@ private:
 
     // Helper to check if the list of tokens has been exhausted
     bool is_at_end();
+
+    // Helper to parse parameters from a function
+    std::vector<std::unique_ptr<VariableDeclAST>> parse_func_parameters();
 
     /* Grammar Matching Mehods */
 
