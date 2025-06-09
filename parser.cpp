@@ -24,29 +24,48 @@ Token Parser::advance() {
     return tokens[current_token - 1];
 }
 
+bool Parser::check_advance(const TokenType& token_type) {
+    if (token_type == tokens[current_token].token_type) {
+        advance();
+
+        return true;
+    }
+
+    return false;
+}
+
 bool Parser::is_at_end() {
     return current_token >= tokens.size();
 }
 
+VariableType Parser::parse_type() {
+    Token type_token = advance();
+
+    switch (type_token.token_type) {
+        case TokenType::INT_TYPE:
+            return VariableType::INT;
+        case TokenType::VOID_TYPE:
+            return VariableType::VOID;
+        default:
+            throw std::runtime_error("Syntax Error: Expected a type name");
+    }
+}
+
 std::vector<std::unique_ptr<VariableDeclAST>> Parser::parse_func_parameters() {
-    consume(TokenType::OPEN_PAREN, "Incorrect function definition: Check parentheses");
+    consume(TokenType::OPEN_PAREN, "Incorrect function definition, check parentheses");
 
     std::vector<std::unique_ptr<VariableDeclAST>> parameters;
-    Token next_token = advance();
-    while(next_token.token_type != TokenType::CLOSE_PAREN) {
-        std::string type_name = std::get<std::string>(next_token.literal);
-        next_token = advance();
-        std::string variable_name = std::get<std::string>(next_token.literal);
-        VariableType variable_type = parse_type(type_name);
+    if (!check(TokenType::CLOSE_PAREN)) {
+        do {
+            VariableType param_type = parse_type();
+            Token param_token = consume(TokenType::IDENTIFIER, "Expected parameter name");
+            std::string param_name = std::get<std::string>(param_token.literal);
 
-        parameters.push_back(std::make_unique<VariableDeclAST>(variable_type, variable_name));
-
-        next_token = advance();
-
-        if (next_token.token_type == TokenType::COMMA) {
-            next_token = advance();
-        }
+            parameters.push_back(std::make_unique<VariableDeclAST>(param_type, param_name));
+        } while (check_advance(TokenType::COMMA));
     }
+
+    consume(TokenType::CLOSE_PAREN, "Incorrect function definition, check parentheses");
 
     return parameters;
 }
@@ -72,8 +91,7 @@ std::unique_ptr<StmtAST> Parser::parse_statement() {
 }
 
 std::unique_ptr<FunctionDecl> Parser::parse_function() {
-    // Assumes only the standard main function for now
-    consume(TokenType::INT_TYPE, "Expected return value of type 'int'");
+    VariableType return_type = parse_type();
     std::string func_name = std::get<std::string>(consume(TokenType::IDENTIFIER, "Incorrect function definition: Check function identifier").literal);
     std::vector<std::unique_ptr<VariableDeclAST>> func_parameters = parse_func_parameters();
     consume(TokenType::OPEN_BRACE, "Incorrect function definition: Check braces");
@@ -82,5 +100,5 @@ std::unique_ptr<FunctionDecl> Parser::parse_function() {
 
     consume(TokenType::CLOSE_BRACE, "Incoreect function definition: Check braces");
 
-    return std::make_unique<FunctionDecl>(FunctionDecl(func_name, std::move(func_parameters), std::move(statement)));
+    return std::make_unique<FunctionDecl>(FunctionDecl(func_name, return_type, std::move(func_parameters), std::move(statement)));
 }

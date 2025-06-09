@@ -25,8 +25,14 @@ private:
     // Helper to advance through the list of tokens
     Token advance();        
 
+    // Check the current token and advance if it is valid, return boolean based on result
+    bool check_advance(const TokenType& token_type);
+
     // Helper to check if the list of tokens has been exhausted
     bool is_at_end();
+
+    // Helper to parse VariableTypes
+    VariableType parse_type();
 
     // Helper to parse parameters from a function
     std::vector<std::unique_ptr<VariableDeclAST>> parse_func_parameters();

@@ -103,6 +103,8 @@ std::vector<Token> lex(const std::string& file_path) {
 				file_tokens.push_back(Token(TokenType::RETURN, std::monostate()));
 			} else if (word == "int") {
 				file_tokens.push_back(Token(TokenType::INT_TYPE, std::monostate()));
+			} else if (word == "void") {
+				file_tokens.push_back(Token(TokenType::VOID_TYPE, std::monostate()));
 			} else {
 				file_tokens.push_back(Token(TokenType::IDENTIFIER, word));
 			}

@@ -15,7 +15,7 @@ enum class TokenType {
 	INT, IDENTIFIER,
 
 	// Keywords
-	RETURN, INT_TYPE,
+	RETURN, INT_TYPE, VOID_TYPE
 };
 
 struct Token {

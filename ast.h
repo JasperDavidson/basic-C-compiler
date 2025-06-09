@@ -1,6 +1,8 @@
 #ifndef AST_H
 #define AST_H
 
+#include "lex.h"
+
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -11,8 +13,6 @@ enum class VariableType {
     INT,
     VOID
 };
-
-VariableType parse_type(const std::string& type);
 
 // Base struct for expression nodes
 struct ExprAST {
@@ -59,10 +59,12 @@ struct VariableDeclAST : public DeclAST {
 // Node for a function declaration
 struct FunctionDecl : public DeclAST {
     std::string name;
+    VariableType return_type;
     std::vector<std::unique_ptr<VariableDeclAST>> parameters;
     std::unique_ptr<StmtAST> body; // For now, the body of a function is just one statement (return)
 
-    FunctionDecl(std::string name, std::vector<std::unique_ptr<VariableDeclAST>> params, std::unique_ptr<StmtAST> body) : name(std::move(name)), parameters(std::move(params)), body(std::move(body)) {};
+    FunctionDecl(std::string name, VariableType return_type, std::vector<std::unique_ptr<VariableDeclAST>> params, std::unique_ptr<StmtAST> body) :
+                 name(std::move(name)), return_type(return_type), parameters(std::move(params)), body(std::move(body)) {};
 };
 
 #endif
