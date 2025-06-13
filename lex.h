@@ -2,29 +2,38 @@
 #define LEX_H
 
 #include <string>
-#include <vector>
 #include <variant>
+#include <vector>
 
 using TokenValue = std::variant<std::monostate, int, std::string>;
 
 enum class TokenType {
-	// Single character tokens
-	OPEN_BRACE, CLOSE_BRACE, OPEN_PAREN, CLOSE_PAREN, SEMICOLON, COMMA,
+  // Single character tokens
+  OPEN_BRACE,
+  CLOSE_BRACE,
+  OPEN_PAREN,
+  CLOSE_PAREN,
+  SEMICOLON,
+  COMMA,
 
-	// Literals
-	INT, IDENTIFIER,
+  // Literals
+  INT,
+  IDENTIFIER,
 
-	// Keywords
-	RETURN, INT_TYPE, VOID_TYPE
+  // Keywords
+  RETURN,
+  INT_TYPE,
+  VOID_TYPE
 };
 
 struct Token {
-	TokenType token_type;
-	TokenValue literal;
+  TokenType token_type;
+  TokenValue literal;
 
-	Token(TokenType token_type, TokenValue literal) : token_type(token_type), literal(literal) {};
+  Token(TokenType token_type, TokenValue literal)
+      : token_type(token_type), literal(literal) {};
 };
 
-std::vector<Token> lex(const std::string& file_path);
+std::vector<Token> lex(const std::string &file_path);
 
 #endif
