@@ -113,5 +113,6 @@ std::unique_ptr<FunctionDecl> Parser::parse_function() {
   consume(TokenType::CLOSE_BRACE,
           "Incoreect function definition: Check braces");
 
-  return std::make_unique<FunctionDecl>(func_name, return_type, std::move(func_parameters), std::move(body));
+  return std::make_unique<FunctionDecl>(
+      func_name, return_type, std::move(func_parameters), std::move(body));
 }

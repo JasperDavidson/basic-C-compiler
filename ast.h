@@ -44,11 +44,11 @@ public:
 
 // Visitor for declarations ('int x', func(..., ..., ...), etc.)
 class DeclVisitor {
-  public:
-    virtual ~DeclVisitor() = default;
+public:
+  virtual ~DeclVisitor() = default;
 
-    virtual void visit(VariableDecl *decl) = 0;
-    virtual void visit(FunctionDecl *decl) = 0;
+  virtual void visit(VariableDecl *decl) = 0;
+  virtual void visit(FunctionDecl *decl) = 0;
 };
 
 // Base struct for expression nodes

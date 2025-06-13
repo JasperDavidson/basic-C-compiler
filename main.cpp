@@ -1,5 +1,5 @@
-#include "ast_printer.h"
 #include "ast.h"
+#include "ast_printer.h"
 #include "lex.h"
 #include "parser.h"
 

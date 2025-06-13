@@ -52,7 +52,7 @@ std::string lex_word(int *file_index, std::ifstream &file) {
   std::string word;
   word.resize(cur_index - init_file_index);
   file.read(&word[0], cur_index - init_file_index);
-  
+
   return word;
 }
 
