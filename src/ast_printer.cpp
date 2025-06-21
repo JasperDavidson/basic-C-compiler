@@ -10,17 +10,17 @@ void AstPrinter::print_indent() {
   }
 }
 
-void AstPrinter::visit(IntLiteralExpr *expr) {
+void AstPrinter::visit(const IntLiteralExpr *expr) {
   print_indent();
   std::cout << "(IntLiteralExpr " << std::to_string(expr->value) << ")";
 }
 
-void AstPrinter::visit(VariableExpr *expr) {
+void AstPrinter::visit(const VariableExpr *expr) {
   print_indent();
   std::cout << "(VariableExpr " << expr->name << ")";
 }
 
-void AstPrinter::visit(ReturnStmt *stmt) {
+void AstPrinter::visit(const ReturnStmt *stmt) {
   print_indent();
   std::cout << "(ReturnStmt\n";
 
@@ -31,13 +31,13 @@ void AstPrinter::visit(ReturnStmt *stmt) {
   std::cout << ")";
 }
 
-void AstPrinter::visit(VariableDecl *decl) {
+void AstPrinter::visit(const VariableDecl *decl) {
   print_indent();
   std::cout << "(VariableDecl " << type_to_string(decl->type) << " "
             << decl->name << ")\n";
 }
 
-void AstPrinter::visit(FunctionDecl *decl) {
+void AstPrinter::visit(const FunctionDecl *decl) {
   print_indent();
   std::cout << "(FunctionDecl name=" << decl->name
             << ", return=" << type_to_string(decl->return_type)

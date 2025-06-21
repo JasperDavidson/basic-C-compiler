@@ -30,8 +30,8 @@ class ExprVisitor {
 public:
   virtual ~ExprVisitor() = default;
 
-  virtual void visit(IntLiteralExpr *expr) = 0;
-  virtual void visit(VariableExpr *expr) = 0;
+  virtual void visit(const IntLiteralExpr *expr) = 0;
+  virtual void visit(const VariableExpr *expr) = 0;
 };
 
 // Visitor for statements ('return', 'if', etc.)
@@ -39,7 +39,7 @@ class StmtVisitor {
 public:
   virtual ~StmtVisitor() = default;
 
-  virtual void visit(ReturnStmt *stmt) = 0;
+  virtual void visit(const ReturnStmt *stmt) = 0;
 };
 
 // Visitor for declarations ('int x', func(..., ..., ...), etc.)
@@ -47,8 +47,8 @@ class DeclVisitor {
 public:
   virtual ~DeclVisitor() = default;
 
-  virtual void visit(VariableDecl *decl) = 0;
-  virtual void visit(FunctionDecl *decl) = 0;
+  virtual void visit(const VariableDecl *decl) = 0;
+  virtual void visit(const FunctionDecl *decl) = 0;
 };
 
 // Base struct for expression nodes
