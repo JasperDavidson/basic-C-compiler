@@ -20,12 +20,30 @@ void AstPrinter::visit(const VariableExpr *expr) {
   std::cout << "(VariableExpr " << expr->name << ")";
 }
 
+void AstPrinter::visit(const UnaryOpExpr *expr) {
+  std::cout << "(";
+  switch (expr->op) {
+    case OperationType::NEGATE:
+      std::cout << "Unary Operation: Negate ";
+      break;
+    case OperationType::BITWISE:
+      std::cout << "Unary Operation: Bitwise ";
+      break;
+    case OperationType::LOGIC_NEGATE:
+      std::cout << "Unary Operation: Logical Negation ";
+      break;
+  }
+
+  expr->expr->accept(this);
+  std::cout << ")";
+}
+
 void AstPrinter::visit(const ReturnStmt *stmt) {
   print_indent();
   std::cout << "(ReturnStmt\n";
 
   ++indentation;
-  stmt->expression->accept(this);
+  stmt->expr->accept(this);
   --indentation;
 
   std::cout << ")";

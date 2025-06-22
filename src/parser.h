@@ -34,8 +34,11 @@ private:
   // Helper to check if the list of tokens has been exhausted
   bool is_at_end();
 
-  // Helper to parse VariableTypes
+  // Helper to parse VariableTypes from tokens
   VariableType parse_type();
+
+  // Helper to parse OperationTypes from tokens
+  OperationType parse_operator();
 
   // Helper to parse parameters from a function
   std::vector<std::unique_ptr<VariableDecl>> parse_func_parameters();

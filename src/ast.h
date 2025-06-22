@@ -12,6 +12,7 @@
 class ExprVisitor;
 struct IntLiteralExpr;
 struct VariableExpr;
+struct UnaryOpExpr;
 
 class StmtVisitor;
 struct ReturnStmt;
@@ -20,8 +21,9 @@ class DeclVisitor;
 struct VariableDecl;
 struct FunctionDecl;
 
-// I want to decouple the parser from the lexer, so I define types here
+// I want to decouple the parser from the lexer, so I define types and operations here
 enum class VariableType { INT, VOID };
+enum class OperationType { NEGATE, BITWISE, LOGIC_NEGATE };
 
 std::string type_to_string(VariableType variable_type);
 
@@ -32,6 +34,7 @@ public:
 
   virtual void visit(const IntLiteralExpr *expr) = 0;
   virtual void visit(const VariableExpr *expr) = 0;
+  virtual void visit(const UnaryOpExpr *expr) = 0;
 };
 
 // Visitor for statements ('return', 'if', etc.)
@@ -75,6 +78,16 @@ struct VariableExpr : public ExprAST {
   void accept(ExprVisitor *visitor) { visitor->visit(this); }
 };
 
+// Unary Operation node
+struct UnaryOpExpr : public ExprAST {
+  OperationType op;
+  std::unique_ptr<ExprAST> expr;
+
+  UnaryOpExpr(OperationType op, std::unique_ptr<ExprAST> expr) : op(op), expr(std::move(expr)) {};
+
+  void accept(ExprVisitor *visitor) { visitor->visit(this); };
+};
+
 // Base struct for statement nodes
 struct StmtAST {
   virtual ~StmtAST() = default;
@@ -83,10 +96,10 @@ struct StmtAST {
 
 // Return statement node
 struct ReturnStmt : public StmtAST {
-  std::unique_ptr<ExprAST> expression;
+  std::unique_ptr<ExprAST> expr;
 
   explicit ReturnStmt(std::unique_ptr<ExprAST> expr)
-      : expression(std::move(expr)) {};
+      : expr(std::move(expr)) {};
 
   void accept(StmtVisitor *visitor) { visitor->visit(this); }
 };

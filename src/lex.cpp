@@ -91,6 +91,15 @@ std::vector<Token> lex(const std::string &file_path) {
       case ',':
         file_tokens.push_back(Token(TokenType::COMMA, std::monostate()));
         break;
+      case '-':
+        file_tokens.push_back(Token(TokenType::NEGATE, std::monostate()));
+        break;
+      case '~':
+        file_tokens.push_back(Token(TokenType::BITWISE, std::monostate()));
+        break;
+      case '!':
+        file_tokens.push_back(Token(TokenType::LOGIC_NEGATE, std::monostate()));
+        break;
       }
     } else if (is_numeric(cur_char)) { // Integer literals
       int int_literal = lex_int(&file_index, c_file);

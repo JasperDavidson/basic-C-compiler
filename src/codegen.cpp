@@ -21,10 +21,28 @@ void AstAssembly::visit(const IntLiteralExpr *expr) {
 // Implement later
 void AstAssembly::visit(const VariableExpr *expr) {}
 
-void AstAssembly::visit(const ReturnStmt *stmt) {
-  asm_file << "\tmov\tw0, ";
+void AstAssembly::visit(const UnaryOpExpr *expr) {
+  expr->expr->accept(this);
+  asm_file << "\n\t";
+  
+  switch (expr->op) {
+    case OperationType::NEGATE:
+      asm_file << "neg\tx0, x0";
+      break;
+    case OperationType::BITWISE:
+      asm_file << "mvn\tx0, x0";
+      break;
+    case OperationType::LOGIC_NEGATE:
+      asm_file << "cmp\tx0, #0";
+      asm_file << "\n\tcset\tx0, EQ";
+      break;
+  }
+}
 
-  stmt->expression->accept(this);
+void AstAssembly::visit(const ReturnStmt *stmt) {
+  asm_file << "\tmov\tx0, ";
+
+  stmt->expr->accept(this);
 
   asm_file << "\n\tret";
 }

@@ -11,6 +11,7 @@ public:
   // Fulfilling ExprVisitor contract
   void visit(const IntLiteralExpr *expr) override;
   void visit(const VariableExpr *expr) override;
+  void visit(const UnaryOpExpr *expr) override;
 
   // Fulfilling the StmtVisitor contract
   void visit(const ReturnStmt *stmt) override;

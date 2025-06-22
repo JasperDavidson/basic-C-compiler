@@ -50,6 +50,21 @@ VariableType Parser::parse_type() {
   }
 }
 
+OperationType Parser::parse_operator() {
+  Token op_token = advance();
+
+  switch (op_token.token_type) {
+    case TokenType::NEGATE:
+      return OperationType::NEGATE;
+    case TokenType::BITWISE:
+      return OperationType::BITWISE;
+    case TokenType::LOGIC_NEGATE:
+      return OperationType::LOGIC_NEGATE;
+    default:
+      throw std::runtime_error("Syntax Error: Expected an operator");
+  }
+}
+
 std::vector<std::unique_ptr<VariableDecl>> Parser::parse_func_parameters() {
   consume(TokenType::OPEN_PAREN,
           "Incorrect function definition, check parentheses");
@@ -77,6 +92,11 @@ std::unique_ptr<ExprAST> Parser::parse_expression() {
   if (check(TokenType::INT)) {
     Token int_token = advance();
     return std::make_unique<IntLiteralExpr>(std::get<int>(int_token.literal));
+  } else {
+    OperationType op = parse_operator();
+    auto inner_expr = parse_expression();
+
+    return std::make_unique<UnaryOpExpr>(op, std::move(inner_expr));
   }
 
   throw std::runtime_error("Expected an expression");

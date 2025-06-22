@@ -15,6 +15,9 @@ enum class TokenType {
   CLOSE_PAREN,
   SEMICOLON,
   COMMA,
+  NEGATE,
+  BITWISE,
+  LOGIC_NEGATE,
 
   // Literals
   INT,
