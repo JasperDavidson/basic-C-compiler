@@ -94,6 +94,15 @@ std::vector<Token> lex(const std::string &file_path) {
       case '-':
         file_tokens.push_back(Token(TokenType::NEGATE, std::monostate()));
         break;
+      case '+':
+        file_tokens.push_back(Token(TokenType::ADD, std::monostate()));
+        break;
+      case '*':
+        file_tokens.push_back(Token(TokenType::MULT, std::monostate()));
+        break;
+      case '/':
+        file_tokens.push_back(Token(TokenType::DIVIDE, std::monostate()));
+        break;
       case '~':
         file_tokens.push_back(Token(TokenType::BITWISE, std::monostate()));
         break;

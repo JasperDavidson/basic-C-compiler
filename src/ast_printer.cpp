@@ -2,6 +2,7 @@
 #include "ast.h"
 
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 void AstPrinter::print_indent() {
@@ -12,52 +13,75 @@ void AstPrinter::print_indent() {
 
 void AstPrinter::visit(const IntLiteralExpr *expr) {
   print_indent();
-  std::cout << "(IntLiteralExpr " << std::to_string(expr->value) << ")";
+  std::cout << " IntLiteralExpr " << std::to_string(expr->value);
 }
 
 void AstPrinter::visit(const VariableExpr *expr) {
   print_indent();
-  std::cout << "(VariableExpr " << expr->name << ")";
+  std::cout << " VariableExpr " << expr->name;
 }
 
 void AstPrinter::visit(const UnaryOpExpr *expr) {
-  std::cout << "(";
   switch (expr->op) {
     case OperationType::NEGATE:
-      std::cout << "Unary Operation: Negate ";
+      std::cout << "Negate";
       break;
     case OperationType::BITWISE:
-      std::cout << "Unary Operation: Bitwise ";
+      std::cout << "Bitwise";
       break;
     case OperationType::LOGIC_NEGATE:
-      std::cout << "Unary Operation: Logical Negation ";
+      std::cout << "Logical Negation";
       break;
+    default:
+      throw std::runtime_error("Expected a unary operation");
   }
 
   expr->expr->accept(this);
-  std::cout << ")";
+}
+
+void AstPrinter::visit(const BinaryOpExpr *expr) {
+  expr->expr_one->accept(this);
+  
+  switch (expr->op) {
+    case OperationType::ADD:
+      std::cout << "Add";
+      break;
+    case OperationType::NEGATE:
+      std::cout << "Subtract";
+      break;
+    case OperationType::MULT:
+      std::cout << "Multiply";
+      break;
+    case OperationType::DIVIDE:
+      std::cout << "Divide";
+      break;
+    default:
+      throw std::runtime_error("Expected a binary operation");
+  }
+
+  expr->expr_two->accept(this);
 }
 
 void AstPrinter::visit(const ReturnStmt *stmt) {
   print_indent();
-  std::cout << "(ReturnStmt\n";
+  std::cout << "ReturnStmt ";
 
   ++indentation;
   stmt->expr->accept(this);
   --indentation;
 
-  std::cout << ")";
+  std::cout << '\n';
 }
 
 void AstPrinter::visit(const VariableDecl *decl) {
   print_indent();
-  std::cout << "(VariableDecl " << type_to_string(decl->type) << " "
-            << decl->name << ")\n";
+  std::cout << "VariableDecl " << type_to_string(decl->type) << " "
+            << decl->name << "\n";
 }
 
 void AstPrinter::visit(const FunctionDecl *decl) {
   print_indent();
-  std::cout << "(FunctionDecl name=" << decl->name
+  std::cout << "FunctionDecl name=" << decl->name
             << ", return=" << type_to_string(decl->return_type)
             << ", parameters=";
 
@@ -65,7 +89,7 @@ void AstPrinter::visit(const FunctionDecl *decl) {
     std::cout << "(" << type_to_string(decl->parameters[i]->type) << " "
               << decl->parameters[i]->name << ")";
   }
-  std::cout << '\n';
+  std::cout << ":\n";
 
   ++indentation;
   for (int i = 0; i < decl->body.size(); ++i) {
@@ -73,5 +97,5 @@ void AstPrinter::visit(const FunctionDecl *decl) {
   }
   --indentation;
 
-  std::cout << ")\n";
+  std::cout << '\n';
 }

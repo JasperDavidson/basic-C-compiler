@@ -18,6 +18,9 @@ enum class TokenType {
   NEGATE,
   BITWISE,
   LOGIC_NEGATE,
+  ADD,
+  MULT,
+  DIVIDE,
 
   // Literals
   INT,

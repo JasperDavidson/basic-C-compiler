@@ -60,6 +60,12 @@ OperationType Parser::parse_operator() {
       return OperationType::BITWISE;
     case TokenType::LOGIC_NEGATE:
       return OperationType::LOGIC_NEGATE;
+    case TokenType::ADD:
+      return OperationType::ADD;
+    case TokenType::MULT:
+      return OperationType::MULT;
+    case TokenType::DIVIDE:
+      return OperationType::DIVIDE;
     default:
       throw std::runtime_error("Syntax Error: Expected an operator");
   }
@@ -88,18 +94,54 @@ std::vector<std::unique_ptr<VariableDecl>> Parser::parse_func_parameters() {
   return parameters;
 }
 
-std::unique_ptr<ExprAST> Parser::parse_expression() {
-  if (check(TokenType::INT)) {
-    Token int_token = advance();
-    return std::make_unique<IntLiteralExpr>(std::get<int>(int_token.literal));
-  } else {
-    OperationType op = parse_operator();
-    auto inner_expr = parse_expression();
+std::unique_ptr<ExprAST> Parser::parse_factor() {
+  if (check(TokenType::OPEN_PAREN)) {
+    auto expr = parse_expression();
+    consume(TokenType::CLOSE_PAREN, "Parentheses mismatch on bounded expression");
 
-    return std::make_unique<UnaryOpExpr>(op, std::move(inner_expr));
+    return expr;
+  } else if (check(TokenType::NEGATE) || check(TokenType::BITWISE) || check(TokenType::LOGIC_NEGATE)) {
+    OperationType op = parse_operator();
+    auto factor = parse_factor();
+    auto un_op = std::make_unique<UnaryOpExpr>(op, std::move(factor));
+
+    return un_op;
+  } else if (check(TokenType::INT)) {
+    Token num = advance();
+    auto num_expr = std::make_unique<IntLiteralExpr>(std::get<int>(num.literal));
+
+    return num_expr;
   }
 
-  throw std::runtime_error("Expected an expression");
+  throw std::runtime_error("Expected a 'factor'");
+}
+
+std::unique_ptr<ExprAST> Parser::parse_term() {
+  std::unique_ptr<ExprAST> factor = parse_factor();
+
+  while (check(TokenType::MULT) || check(TokenType::DIVIDE)) {
+    OperationType op = parse_operator();
+    // advance(); // Consume the '*' or '/'
+    auto next_factor = parse_factor();
+
+    factor = std::make_unique<BinaryOpExpr>(op, std::move(factor), std::move(next_factor));
+  }
+
+  return factor;  
+}
+
+std::unique_ptr<ExprAST> Parser::parse_expression() {
+  std::unique_ptr<ExprAST> term = parse_term();
+  
+  while (check(TokenType::ADD) || check(TokenType::NEGATE)) {
+    OperationType op = parse_operator();
+    // advance(); // Consume the '+' or '-'
+    auto next_term = parse_term();
+
+    term = std::make_unique<BinaryOpExpr>(op, std::move(term), std::move(next_term));
+  }
+
+  return term;  
 }
 
 std::unique_ptr<StmtAST> Parser::parse_statement() {

@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 void AstAssembly::generate(DeclAST *root_node, std::string asm_file_name) {
@@ -36,7 +37,15 @@ void AstAssembly::visit(const UnaryOpExpr *expr) {
       asm_file << "cmp\tx0, #0";
       asm_file << "\n\tcset\tx0, EQ";
       break;
+    default:
+      throw std::runtime_error("Expected a unary operation");
   }
+}
+
+void AstAssembly::visit(const BinaryOpExpr *expr) {
+  // switch(expr->op) {
+    
+  // }
 }
 
 void AstAssembly::visit(const ReturnStmt *stmt) {
