@@ -42,10 +42,40 @@ void AstAssembly::visit(const UnaryOpExpr *expr) {
   }
 }
 
+// Optimization idea: Somehow find out how many binary operations there are and allocate the required memory ahead of time. This would help save space on these simple operations since arm assembly
+// ABI has the stack as 16-byte aligned. So, if there were two operations and the program allocated 16 bytes, there wouldn't be wasted space. Currently for every push onto the stack the program
+// wastes 8 bytes since it must stay 16-byte aligned
 void AstAssembly::visit(const BinaryOpExpr *expr) {
-  // switch(expr->op) {
-    
-  // }
+  // Compute the first expression and push it to the stack
+  expr->expr_one->accept(this);
+  asm_file << "\n\tstr\tx0, [sp, #-16]!";
+
+  // Compute the second expression and save it to x0
+  asm_file << "\n\tmov\tx0, ";
+  expr->expr_two->accept(this);
+
+  // Determine the operation and combine the two expressions
+  asm_file << "\n\tldr\tx1, [sp], #16";
+
+  asm_file << "\n\t";
+  switch (expr->op) {
+    case OperationType::ADD:
+      asm_file << "add\t";
+      break;
+    case OperationType::NEGATE:
+      asm_file << "sub\t";
+      break;
+    case OperationType::MULT:
+      asm_file << "mul\t";
+      break;
+    case OperationType::DIVIDE:
+      asm_file << "udiv\t";
+      break;
+    default:
+      throw std::runtime_error("Expected a binary operation");
+  }
+
+  asm_file << "x0, x1, x0";
 }
 
 void AstAssembly::visit(const ReturnStmt *stmt) {
