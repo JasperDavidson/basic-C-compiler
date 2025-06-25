@@ -44,16 +44,40 @@ void AstPrinter::visit(const BinaryOpExpr *expr) {
   
   switch (expr->op) {
     case OperationType::ADD:
-      std::cout << "Add";
+      std::cout << " Add ";
       break;
     case OperationType::NEGATE:
-      std::cout << "Subtract";
+      std::cout << " Subtract ";
       break;
     case OperationType::MULT:
-      std::cout << "Multiply";
+      std::cout << " Multiply ";
       break;
     case OperationType::DIVIDE:
-      std::cout << "Divide";
+      std::cout << " Divide ";
+      break;
+    case OperationType::AND:
+      std::cout << " And ";
+      break;
+    case OperationType::OR:
+      std::cout << " Or ";
+      break;
+    case OperationType::EQUAL:
+      std::cout << " Equal ";
+      break;
+    case OperationType::NOT_EQUAL:
+      std::cout << " Not Equa l";
+      break;
+    case OperationType::LESS_THAN:
+      std::cout << " Less Than ";
+      break;
+    case OperationType::LESS_THAN_EQUAL:
+      std::cout << " Less Than or Equa l";
+      break;
+    case OperationType::GREATER_THAN:
+      std::cout << " Greater Than ";
+      break;
+    case OperationType::GREATER_THAN_EQUAL:
+      std::cout << " Greater Than or Equal ";
       break;
     default:
       throw std::runtime_error("Expected a binary operation");

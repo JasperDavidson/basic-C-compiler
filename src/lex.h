@@ -22,6 +22,16 @@ enum class TokenType {
   MULT,
   DIVIDE,
 
+  // Logic
+  AND,
+  OR,
+  EQUAL,
+  NOT_EQUAL,
+  LESS_THAN,
+  LESS_THAN_EQUAL,
+  GREATER_THAN,
+  GREATER_THAN_EQUAL,
+
   // Literals
   INT,
   IDENTIFIER,

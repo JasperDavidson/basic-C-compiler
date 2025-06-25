@@ -24,7 +24,7 @@ struct FunctionDecl;
 
 // I want to decouple the parser from the lexer, so I define types and operations here
 enum class VariableType { INT, VOID };
-enum class OperationType { NEGATE, BITWISE, LOGIC_NEGATE, ADD, MULT, DIVIDE };
+enum class OperationType { NEGATE, BITWISE, LOGIC_NEGATE, ADD, MULT, DIVIDE, AND, OR, EQUAL, NOT_EQUAL, GREATER_THAN, LESS_THAN, GREATER_THAN_EQUAL, LESS_THAN_EQUAL };
 
 std::string type_to_string(VariableType variable_type);
 

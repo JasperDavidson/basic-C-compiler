@@ -56,6 +56,16 @@ std::string lex_word(int *file_index, std::ifstream &file) {
   return word;
 }
 
+bool lex_double(char check_char, int *file_index, std::ifstream &file) {
+  if (file.peek() == check_char) {
+    (*file_index)++;
+    file.get();
+    return true;
+  }
+
+  return false;
+}
+
 std::vector<Token> lex(const std::string &file_path) {
   std::ifstream c_file(file_path);
   std::vector<Token> file_tokens;
@@ -71,7 +81,7 @@ std::vector<Token> lex(const std::string &file_path) {
     if (cur_char == EOF) { // End of file, return collected tokens
       break;
     } else if (!is_alphabetic(cur_char) &&
-               !is_numeric(cur_char)) { // Single character tokens
+               !is_numeric(cur_char)) { // Single and double character tokens
       switch (cur_char) {
       case '{':
         file_tokens.push_back(Token(TokenType::OPEN_BRACE, std::monostate()));
@@ -107,7 +117,49 @@ std::vector<Token> lex(const std::string &file_path) {
         file_tokens.push_back(Token(TokenType::BITWISE, std::monostate()));
         break;
       case '!':
+        if (lex_double('=', &file_index, c_file)) {
+          file_tokens.push_back(Token(TokenType::NOT_EQUAL, std::monostate()));
+          break;
+        }
+
         file_tokens.push_back(Token(TokenType::LOGIC_NEGATE, std::monostate()));
+        break;
+      case '<':
+        if (lex_double('=', &file_index, c_file)) {
+          file_tokens.push_back(Token(TokenType::LESS_THAN_EQUAL, std::monostate()));
+          break;
+        }
+
+        file_tokens.push_back(Token(TokenType::LESS_THAN, std::monostate()));
+        break;
+      case '>':
+        if (lex_double('=', &file_index, c_file)) {
+          file_tokens.push_back(Token(TokenType::GREATER_THAN_EQUAL, std::monostate()));
+          break;
+        }
+
+        file_tokens.push_back(Token(TokenType::GREATER_THAN, std::monostate()));
+        break;
+      case '&':
+        if (lex_double('&', &file_index, c_file)) {
+          file_tokens.push_back(Token(TokenType::AND, std::monostate()));
+          break;
+        }
+
+        break;
+      case '|':
+        if (lex_double('|', &file_index, c_file)) {
+          file_tokens.push_back(Token(TokenType::OR, std::monostate()));
+          break;
+        }
+
+        break;
+      case '=':
+        if (lex_double('=', &file_index, c_file)) {
+          file_tokens.push_back(Token(TokenType::EQUAL, std::monostate()));
+          break;
+        }
+
         break;
       }
     } else if (is_numeric(cur_char)) { // Integer literals
@@ -127,7 +179,7 @@ std::vector<Token> lex(const std::string &file_path) {
       }
     }
 
-    file_index++;
+    ++file_index;
   }
 
   return file_tokens;

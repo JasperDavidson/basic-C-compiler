@@ -1,5 +1,6 @@
 #include "codegen.h"
 #include "ast.h"
+#include "lex.h"
 
 #include <fstream>
 #include <memory>
@@ -57,25 +58,39 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
   // Determine the operation and combine the two expressions
   asm_file << "\n\tldr\tx1, [sp], #16";
 
-  asm_file << "\n\t";
-  switch (expr->op) {
-    case OperationType::ADD:
-      asm_file << "add\t";
-      break;
-    case OperationType::NEGATE:
-      asm_file << "sub\t";
-      break;
-    case OperationType::MULT:
-      asm_file << "mul\t";
-      break;
-    case OperationType::DIVIDE:
-      asm_file << "udiv\t";
-      break;
-    default:
-      throw std::runtime_error("Expected a binary operation");
-  }
+  if (expr->op == OperationType::ADD || expr->op == OperationType::NEGATE || expr->op == OperationType::MULT || expr->op == OperationType::DIVIDE) {
+    asm_file << "\n\t";
+    switch (expr->op) {
+      case OperationType::ADD:
+        asm_file << "add\t";
+        break;
+      case OperationType::NEGATE:
+        asm_file << "sub\t";
+        break;
+      case OperationType::MULT:
+        asm_file << "mul\t";
+        break;
+      case OperationType::DIVIDE:
+        asm_file << "udiv\t";
+        break;
+      default:
+        throw std::runtime_error("Expected a binary operation");
+    }
 
-  asm_file << "x0, x1, x0";
+    asm_file << "x0, x1, x0";
+  } else if (expr->op == OperationType::EQUAL || expr->op == OperationType::NOT_EQUAL || expr->op == OperationType::LESS_THAN || expr->op == OperationType::LESS_THAN_EQUAL ||
+             expr->op == OperationType::GREATER_THAN || expr->op == OperationType::GREATER_THAN_EQUAL) {
+    asm_file << "cmp\tx0, x1";
+
+    switch (expr->op) {
+      case OperationType::EQUAL:
+        asm_file << "cset\tx0, EQ";
+        break;
+      case OperationType::NOT_EQUAL:
+        asm_file << "cset\tx0, NE";
+        break;
+    }
+  }
 }
 
 void AstAssembly::visit(const ReturnStmt *stmt) {

@@ -66,6 +66,22 @@ OperationType Parser::parse_operator() {
       return OperationType::MULT;
     case TokenType::DIVIDE:
       return OperationType::DIVIDE;
+    case TokenType::AND:
+      return OperationType::AND;
+    case TokenType::OR:
+      return OperationType::OR;
+    case TokenType::EQUAL:
+      return OperationType::EQUAL;
+    case TokenType::NOT_EQUAL:
+      return OperationType::NOT_EQUAL;
+    case TokenType::LESS_THAN:
+      return OperationType::LESS_THAN;
+    case TokenType::LESS_THAN_EQUAL:
+      return OperationType::LESS_THAN_EQUAL;
+    case TokenType::GREATER_THAN:
+      return OperationType::GREATER_THAN;
+    case TokenType::GREATER_THAN_EQUAL:
+      return OperationType::GREATER_THAN_EQUAL;
     default:
       throw std::runtime_error("Syntax Error: Expected an operator");
   }
@@ -130,18 +146,69 @@ std::unique_ptr<ExprAST> Parser::parse_term() {
   return factor;  
 }
 
-std::unique_ptr<ExprAST> Parser::parse_expression() {
+std::unique_ptr<ExprAST> Parser::parse_additive() {
   std::unique_ptr<ExprAST> term = parse_term();
   
   while (check(TokenType::ADD) || check(TokenType::NEGATE)) {
     OperationType op = parse_operator();
-    // advance(); // Consume the '+' or '-'
     auto next_term = parse_term();
 
     term = std::make_unique<BinaryOpExpr>(op, std::move(term), std::move(next_term));
   }
 
   return term;  
+}
+
+std::unique_ptr<ExprAST> Parser::parse_relational() {
+  std::unique_ptr<ExprAST> additive_expr = parse_additive();
+
+  while (check(TokenType::LESS_THAN) || check(TokenType::GREATER_THAN) || check(TokenType::LESS_THAN_EQUAL) || check(TokenType::GREATER_THAN_EQUAL)) {
+    OperationType op = parse_operator();
+    auto next_additive = parse_additive();
+
+    additive_expr = std::make_unique<BinaryOpExpr>(op, std::move(additive_expr), std::move(next_additive));
+  }
+
+  return additive_expr;
+}
+
+std::unique_ptr<ExprAST> Parser::parse_equality() {
+  std::unique_ptr<ExprAST> relational_expr = parse_relational();
+
+  while (check(TokenType::EQUAL) || check(TokenType::NOT_EQUAL)) {
+    OperationType op = parse_operator();
+    auto next_relational = parse_relational();
+
+    relational_expr = std::make_unique<BinaryOpExpr>(op, std::move(relational_expr), std::move(next_relational));
+  }
+  
+  return relational_expr;
+}
+
+std::unique_ptr<ExprAST> Parser::parse_logical_and() {
+  std::unique_ptr<ExprAST> equality_expr = parse_equality();
+
+  while (check(TokenType::AND)) {
+    OperationType op = parse_operator();
+    auto next_equality = parse_equality();
+
+    equality_expr = std::make_unique<BinaryOpExpr>(op, std::move(equality_expr), std::move(next_equality));
+  }
+  
+  return equality_expr;
+}
+
+std::unique_ptr<ExprAST> Parser::parse_expression() {
+  std::unique_ptr<ExprAST> and_expr = parse_logical_and();
+
+  while (check(TokenType::OR)) {
+    OperationType op = parse_operator();
+    auto next_and = parse_logical_and();
+
+    and_expr = std::make_unique<BinaryOpExpr>(op, std::move(and_expr), std::move(next_and));
+  }
+  
+  return and_expr;
 }
 
 std::unique_ptr<StmtAST> Parser::parse_statement() {
