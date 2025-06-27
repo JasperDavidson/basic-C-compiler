@@ -38,11 +38,11 @@ int main(int argc, char **argv) {
     printer.print_from_root(main_func.get());
   }
 
-  // AstAssembly codegen;
-  // std::string asm_name = "assembly.s";
-  // if (main_func) {
-  //   codegen.generate(main_func.get(), asm_name);
-  // }
+  AstAssembly codegen;
+  std::string asm_name = "assembly.s";
+  if (main_func) {
+    codegen.generate(main_func.get(), asm_name);
+  }
 
-  // system("gcc assembly.s -o out");
+  system("gcc assembly.s -o out");
 }

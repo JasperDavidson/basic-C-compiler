@@ -22,9 +22,25 @@ class DeclVisitor;
 struct VariableDecl;
 struct FunctionDecl;
 
-// I want to decouple the parser from the lexer, so I define types and operations here
+// I want to decouple the parser from the lexer, so I define types and
+// operations here
 enum class VariableType { INT, VOID };
-enum class OperationType { NEGATE, BITWISE, LOGIC_NEGATE, ADD, MULT, DIVIDE, AND, OR, EQUAL, NOT_EQUAL, GREATER_THAN, LESS_THAN, GREATER_THAN_EQUAL, LESS_THAN_EQUAL };
+enum class OperationType {
+  NEGATE,
+  BITWISE,
+  LOGIC_NEGATE,
+  ADD,
+  MULT,
+  DIVIDE,
+  AND,
+  OR,
+  EQUAL,
+  NOT_EQUAL,
+  GREATER_THAN,
+  LESS_THAN,
+  GREATER_THAN_EQUAL,
+  LESS_THAN_EQUAL
+};
 
 std::string type_to_string(VariableType variable_type);
 
@@ -85,7 +101,8 @@ struct UnaryOpExpr : public ExprAST {
   OperationType op;
   std::unique_ptr<ExprAST> expr;
 
-  UnaryOpExpr(OperationType op, std::unique_ptr<ExprAST> expr) : op(op), expr(std::move(expr)) {};
+  UnaryOpExpr(OperationType op, std::unique_ptr<ExprAST> expr)
+      : op(op), expr(std::move(expr)) {};
 
   void accept(ExprVisitor *visitor) { visitor->visit(this); };
 };
@@ -96,7 +113,9 @@ struct BinaryOpExpr : public ExprAST {
   std::unique_ptr<ExprAST> expr_one;
   std::unique_ptr<ExprAST> expr_two;
 
-  BinaryOpExpr(OperationType op, std::unique_ptr<ExprAST> expr_one, std::unique_ptr<ExprAST> expr_two) : op(op), expr_one(std::move(expr_one)), expr_two(std::move(expr_two)) {};
+  BinaryOpExpr(OperationType op, std::unique_ptr<ExprAST> expr_one,
+               std::unique_ptr<ExprAST> expr_two)
+      : op(op), expr_one(std::move(expr_one)), expr_two(std::move(expr_two)) {};
 
   void accept(ExprVisitor *visitor) { visitor->visit(this); };
 };
@@ -111,8 +130,7 @@ struct StmtAST {
 struct ReturnStmt : public StmtAST {
   std::unique_ptr<ExprAST> expr;
 
-  explicit ReturnStmt(std::unique_ptr<ExprAST> expr)
-      : expr(std::move(expr)) {};
+  explicit ReturnStmt(std::unique_ptr<ExprAST> expr) : expr(std::move(expr)) {};
 
   void accept(StmtVisitor *visitor) { visitor->visit(this); }
 };

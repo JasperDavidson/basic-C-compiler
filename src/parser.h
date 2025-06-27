@@ -8,21 +8,26 @@
 Grammer for the parser:
 
 <program> ::= <function>
-<function> ::= "int" <id> "(" ")" "{" <statement> "}"
+<function> ::= "int" <id> "(" ")" "{" { <statement> } "}"
 <statement> ::= "return" <expr> ";"
 <expr> ::= <logical_and_expr> { "||" <logical_and_expr> }
 <logical_and_expr> ::= <equality_expr> { "&&" <equality_expr> }
 <equality_expr> ::= <relational_expr> { ("==" | "!=") <relational_expr> }
-<relational_expr> ::= <additive_expr> { ("<" | ">" | "<=" | ">=") <additive_expr> }
-<additive_expr> ::= <term> { ("+" | "-") <term> }
-<term> ::= <factor> { ("*" | "/") <factor> }
-<factor> ::= "(" <expr> ")" | <unary_op> <factor> | int
-<unary_op> ::= "!" | "~" | "-"
+<relational_expr> ::= <additive_expr> { ("<" | ">" | "<=" | ">=")
+<additive_expr> } <additive_expr> ::= <term> { ("+" | "-") <term> } <term> ::=
+<factor> { ("*" | "/") <factor> } <factor> ::= "(" <expr> ")" | <unary_op>
+<factor> | int <unary_op> ::= "!" | "~" | "-"
 
-The expression grammar is designed this way for two key reasons. First, it avoids infinite left recursion that something like <expr> ::= <expr> (operation) <expr> ... might encounter (the example
-could recursively parse expressions forever). It also serves to protect associativity and operator precedence. It achieves this through uses *repitition* craft expressions (the "{}") that are still
-*recursively* interpreted in the AST. In the example definition of <expr>, not only might it be left recursive infinitely, but it also doesn't distinguish between 1 - 2 - 3 being interpreted as
-(1 - 2) - 3 (correct) and 1 - (2 - 3) (incorrect). It also ensures that unary operations take place before binary expressions, as expected.
+The expression grammar is designed this way for two key reasons. First, it
+avoids infinite left recursion that something like <expr> ::= <expr> (operation)
+<expr> ... might encounter (the example could recursively parse expressions
+forever). It also serves to protect associativity and operator precedence. It
+achieves this through uses *repitition* craft expressions (the "{}") that are
+still *recursively* interpreted in the AST. In the example definition of <expr>,
+not only might it be left recursive infinitely, but it also doesn't distinguish
+between 1 - 2 - 3 being interpreted as (1 - 2) - 3 (correct) and 1 - (2 - 3)
+(incorrect). It also ensures that unary operations take place before binary
+expressions, as expected.
 */
 class Parser {
 public:
@@ -58,7 +63,7 @@ private:
   VariableType parse_type();
 
   // Helper to parse OperationTypes from tokens
-  OperationType parse_operator();  
+  OperationType parse_operator();
 
   // Helper to parse parameters from a function
   std::vector<std::unique_ptr<VariableDecl>> parse_func_parameters();
@@ -76,7 +81,7 @@ private:
 
   // Corresponds to the 'relational_expr' rule
   std::unique_ptr<ExprAST> parse_relational();
-  
+
   // Corresponds to the 'additive_expr' rule
   std::unique_ptr<ExprAST> parse_additive();
 

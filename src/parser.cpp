@@ -54,36 +54,36 @@ OperationType Parser::parse_operator() {
   Token op_token = advance();
 
   switch (op_token.token_type) {
-    case TokenType::NEGATE:
-      return OperationType::NEGATE;
-    case TokenType::BITWISE:
-      return OperationType::BITWISE;
-    case TokenType::LOGIC_NEGATE:
-      return OperationType::LOGIC_NEGATE;
-    case TokenType::ADD:
-      return OperationType::ADD;
-    case TokenType::MULT:
-      return OperationType::MULT;
-    case TokenType::DIVIDE:
-      return OperationType::DIVIDE;
-    case TokenType::AND:
-      return OperationType::AND;
-    case TokenType::OR:
-      return OperationType::OR;
-    case TokenType::EQUAL:
-      return OperationType::EQUAL;
-    case TokenType::NOT_EQUAL:
-      return OperationType::NOT_EQUAL;
-    case TokenType::LESS_THAN:
-      return OperationType::LESS_THAN;
-    case TokenType::LESS_THAN_EQUAL:
-      return OperationType::LESS_THAN_EQUAL;
-    case TokenType::GREATER_THAN:
-      return OperationType::GREATER_THAN;
-    case TokenType::GREATER_THAN_EQUAL:
-      return OperationType::GREATER_THAN_EQUAL;
-    default:
-      throw std::runtime_error("Syntax Error: Expected an operator");
+  case TokenType::NEGATE:
+    return OperationType::NEGATE;
+  case TokenType::BITWISE:
+    return OperationType::BITWISE;
+  case TokenType::LOGIC_NEGATE:
+    return OperationType::LOGIC_NEGATE;
+  case TokenType::ADD:
+    return OperationType::ADD;
+  case TokenType::MULT:
+    return OperationType::MULT;
+  case TokenType::DIVIDE:
+    return OperationType::DIVIDE;
+  case TokenType::AND:
+    return OperationType::AND;
+  case TokenType::OR:
+    return OperationType::OR;
+  case TokenType::EQUAL:
+    return OperationType::EQUAL;
+  case TokenType::NOT_EQUAL:
+    return OperationType::NOT_EQUAL;
+  case TokenType::LESS_THAN:
+    return OperationType::LESS_THAN;
+  case TokenType::LESS_THAN_EQUAL:
+    return OperationType::LESS_THAN_EQUAL;
+  case TokenType::GREATER_THAN:
+    return OperationType::GREATER_THAN;
+  case TokenType::GREATER_THAN_EQUAL:
+    return OperationType::GREATER_THAN_EQUAL;
+  default:
+    throw std::runtime_error("Syntax Error: Expected an operator");
   }
 }
 
@@ -112,11 +112,15 @@ std::vector<std::unique_ptr<VariableDecl>> Parser::parse_func_parameters() {
 
 std::unique_ptr<ExprAST> Parser::parse_factor() {
   if (check(TokenType::OPEN_PAREN)) {
+    consume(TokenType::OPEN_PAREN, "Expected an open parenthesis");
+
     auto expr = parse_expression();
-    consume(TokenType::CLOSE_PAREN, "Parentheses mismatch on bounded expression");
+    consume(TokenType::CLOSE_PAREN,
+            "Parentheses mismatch on bounded expression");
 
     return expr;
-  } else if (check(TokenType::NEGATE) || check(TokenType::BITWISE) || check(TokenType::LOGIC_NEGATE)) {
+  } else if (check(TokenType::NEGATE) || check(TokenType::BITWISE) ||
+             check(TokenType::LOGIC_NEGATE)) {
     OperationType op = parse_operator();
     auto factor = parse_factor();
     auto un_op = std::make_unique<UnaryOpExpr>(op, std::move(factor));
@@ -124,7 +128,8 @@ std::unique_ptr<ExprAST> Parser::parse_factor() {
     return un_op;
   } else if (check(TokenType::INT)) {
     Token num = advance();
-    auto num_expr = std::make_unique<IntLiteralExpr>(std::get<int>(num.literal));
+    auto num_expr =
+        std::make_unique<IntLiteralExpr>(std::get<int>(num.literal));
 
     return num_expr;
   }
@@ -140,33 +145,38 @@ std::unique_ptr<ExprAST> Parser::parse_term() {
     // advance(); // Consume the '*' or '/'
     auto next_factor = parse_factor();
 
-    factor = std::make_unique<BinaryOpExpr>(op, std::move(factor), std::move(next_factor));
+    factor = std::make_unique<BinaryOpExpr>(op, std::move(factor),
+                                            std::move(next_factor));
   }
 
-  return factor;  
+  return factor;
 }
 
 std::unique_ptr<ExprAST> Parser::parse_additive() {
   std::unique_ptr<ExprAST> term = parse_term();
-  
+
   while (check(TokenType::ADD) || check(TokenType::NEGATE)) {
     OperationType op = parse_operator();
     auto next_term = parse_term();
 
-    term = std::make_unique<BinaryOpExpr>(op, std::move(term), std::move(next_term));
+    term = std::make_unique<BinaryOpExpr>(op, std::move(term),
+                                          std::move(next_term));
   }
 
-  return term;  
+  return term;
 }
 
 std::unique_ptr<ExprAST> Parser::parse_relational() {
   std::unique_ptr<ExprAST> additive_expr = parse_additive();
 
-  while (check(TokenType::LESS_THAN) || check(TokenType::GREATER_THAN) || check(TokenType::LESS_THAN_EQUAL) || check(TokenType::GREATER_THAN_EQUAL)) {
+  while (check(TokenType::LESS_THAN) || check(TokenType::GREATER_THAN) ||
+         check(TokenType::LESS_THAN_EQUAL) ||
+         check(TokenType::GREATER_THAN_EQUAL)) {
     OperationType op = parse_operator();
     auto next_additive = parse_additive();
 
-    additive_expr = std::make_unique<BinaryOpExpr>(op, std::move(additive_expr), std::move(next_additive));
+    additive_expr = std::make_unique<BinaryOpExpr>(op, std::move(additive_expr),
+                                                   std::move(next_additive));
   }
 
   return additive_expr;
@@ -179,9 +189,10 @@ std::unique_ptr<ExprAST> Parser::parse_equality() {
     OperationType op = parse_operator();
     auto next_relational = parse_relational();
 
-    relational_expr = std::make_unique<BinaryOpExpr>(op, std::move(relational_expr), std::move(next_relational));
+    relational_expr = std::make_unique<BinaryOpExpr>(
+        op, std::move(relational_expr), std::move(next_relational));
   }
-  
+
   return relational_expr;
 }
 
@@ -192,9 +203,10 @@ std::unique_ptr<ExprAST> Parser::parse_logical_and() {
     OperationType op = parse_operator();
     auto next_equality = parse_equality();
 
-    equality_expr = std::make_unique<BinaryOpExpr>(op, std::move(equality_expr), std::move(next_equality));
+    equality_expr = std::make_unique<BinaryOpExpr>(op, std::move(equality_expr),
+                                                   std::move(next_equality));
   }
-  
+
   return equality_expr;
 }
 
@@ -205,9 +217,10 @@ std::unique_ptr<ExprAST> Parser::parse_expression() {
     OperationType op = parse_operator();
     auto next_and = parse_logical_and();
 
-    and_expr = std::make_unique<BinaryOpExpr>(op, std::move(and_expr), std::move(next_and));
+    and_expr = std::make_unique<BinaryOpExpr>(op, std::move(and_expr),
+                                              std::move(next_and));
   }
-  
+
   return and_expr;
 }
 

@@ -23,4 +23,8 @@ public:
 
 private:
   std::ofstream asm_file;
+  int label_num = 0;
+
+  // Helper function to generate unique labels
+  std::string label_gen();
 };

@@ -23,17 +23,17 @@ void AstPrinter::visit(const VariableExpr *expr) {
 
 void AstPrinter::visit(const UnaryOpExpr *expr) {
   switch (expr->op) {
-    case OperationType::NEGATE:
-      std::cout << "Negate";
-      break;
-    case OperationType::BITWISE:
-      std::cout << "Bitwise";
-      break;
-    case OperationType::LOGIC_NEGATE:
-      std::cout << "Logical Negation";
-      break;
-    default:
-      throw std::runtime_error("Expected a unary operation");
+  case OperationType::NEGATE:
+    std::cout << "Negate";
+    break;
+  case OperationType::BITWISE:
+    std::cout << "Bitwise";
+    break;
+  case OperationType::LOGIC_NEGATE:
+    std::cout << "Logical Negation";
+    break;
+  default:
+    throw std::runtime_error("Expected a unary operation");
   }
 
   expr->expr->accept(this);
@@ -41,46 +41,46 @@ void AstPrinter::visit(const UnaryOpExpr *expr) {
 
 void AstPrinter::visit(const BinaryOpExpr *expr) {
   expr->expr_one->accept(this);
-  
+
   switch (expr->op) {
-    case OperationType::ADD:
-      std::cout << " Add ";
-      break;
-    case OperationType::NEGATE:
-      std::cout << " Subtract ";
-      break;
-    case OperationType::MULT:
-      std::cout << " Multiply ";
-      break;
-    case OperationType::DIVIDE:
-      std::cout << " Divide ";
-      break;
-    case OperationType::AND:
-      std::cout << " And ";
-      break;
-    case OperationType::OR:
-      std::cout << " Or ";
-      break;
-    case OperationType::EQUAL:
-      std::cout << " Equal ";
-      break;
-    case OperationType::NOT_EQUAL:
-      std::cout << " Not Equa l";
-      break;
-    case OperationType::LESS_THAN:
-      std::cout << " Less Than ";
-      break;
-    case OperationType::LESS_THAN_EQUAL:
-      std::cout << " Less Than or Equa l";
-      break;
-    case OperationType::GREATER_THAN:
-      std::cout << " Greater Than ";
-      break;
-    case OperationType::GREATER_THAN_EQUAL:
-      std::cout << " Greater Than or Equal ";
-      break;
-    default:
-      throw std::runtime_error("Expected a binary operation");
+  case OperationType::ADD:
+    std::cout << " Add ";
+    break;
+  case OperationType::NEGATE:
+    std::cout << " Subtract ";
+    break;
+  case OperationType::MULT:
+    std::cout << " Multiply ";
+    break;
+  case OperationType::DIVIDE:
+    std::cout << " Divide ";
+    break;
+  case OperationType::AND:
+    std::cout << " And ";
+    break;
+  case OperationType::OR:
+    std::cout << " Or ";
+    break;
+  case OperationType::EQUAL:
+    std::cout << " Equal ";
+    break;
+  case OperationType::NOT_EQUAL:
+    std::cout << " Not Equa l";
+    break;
+  case OperationType::LESS_THAN:
+    std::cout << " Less Than ";
+    break;
+  case OperationType::LESS_THAN_EQUAL:
+    std::cout << " Less Than or Equa l";
+    break;
+  case OperationType::GREATER_THAN:
+    std::cout << " Greater Than ";
+    break;
+  case OperationType::GREATER_THAN_EQUAL:
+    std::cout << " Greater Than or Equal ";
+    break;
+  default:
+    throw std::runtime_error("Expected a binary operation");
   }
 
   expr->expr_two->accept(this);

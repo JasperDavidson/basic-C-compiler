@@ -126,7 +126,8 @@ std::vector<Token> lex(const std::string &file_path) {
         break;
       case '<':
         if (lex_double('=', &file_index, c_file)) {
-          file_tokens.push_back(Token(TokenType::LESS_THAN_EQUAL, std::monostate()));
+          file_tokens.push_back(
+              Token(TokenType::LESS_THAN_EQUAL, std::monostate()));
           break;
         }
 
@@ -134,7 +135,8 @@ std::vector<Token> lex(const std::string &file_path) {
         break;
       case '>':
         if (lex_double('=', &file_index, c_file)) {
-          file_tokens.push_back(Token(TokenType::GREATER_THAN_EQUAL, std::monostate()));
+          file_tokens.push_back(
+              Token(TokenType::GREATER_THAN_EQUAL, std::monostate()));
           break;
         }
 
