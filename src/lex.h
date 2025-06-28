@@ -21,6 +21,12 @@ enum class TokenType {
   ADD,
   MULT,
   DIVIDE,
+  MODULO,
+  BITWISE_AND,
+  BITWISE_OR,
+  BITWISE_XOR,
+  BITWISE_LEFT_SHIFT,
+  BITWISE_RIGHT_SHIFT,
 
   // Logic
   AND,

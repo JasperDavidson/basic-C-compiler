@@ -129,6 +129,10 @@ std::vector<Token> lex(const std::string &file_path) {
           file_tokens.push_back(
               Token(TokenType::LESS_THAN_EQUAL, std::monostate()));
           break;
+        } else if (lex_double('<', &file_index, c_file)) {
+          file_tokens.push_back(
+              Token(TokenType::BITWISE_LEFT_SHIFT, std::monostate()));
+          break;
         }
 
         file_tokens.push_back(Token(TokenType::LESS_THAN, std::monostate()));
@@ -137,6 +141,10 @@ std::vector<Token> lex(const std::string &file_path) {
         if (lex_double('=', &file_index, c_file)) {
           file_tokens.push_back(
               Token(TokenType::GREATER_THAN_EQUAL, std::monostate()));
+          break;
+        } else if (lex_double('>', &file_index, c_file)) {
+          file_tokens.push_back(
+              Token(TokenType::BITWISE_RIGHT_SHIFT, std::monostate()));
           break;
         }
 
@@ -148,6 +156,7 @@ std::vector<Token> lex(const std::string &file_path) {
           break;
         }
 
+        file_tokens.push_back(Token(TokenType::BITWISE_AND, std::monostate()));
         break;
       case '|':
         if (lex_double('|', &file_index, c_file)) {
@@ -155,6 +164,7 @@ std::vector<Token> lex(const std::string &file_path) {
           break;
         }
 
+        file_tokens.push_back(Token(TokenType::BITWISE_OR, std::monostate()));
         break;
       case '=':
         if (lex_double('=', &file_index, c_file)) {
@@ -162,6 +172,12 @@ std::vector<Token> lex(const std::string &file_path) {
           break;
         }
 
+        break;
+      case '%':
+        file_tokens.push_back(Token(TokenType::MODULO, std::monostate()));
+        break;
+      case '^':
+        file_tokens.push_back(Token(TokenType::BITWISE_XOR, std::monostate()));
         break;
       }
     } else if (is_numeric(cur_char)) { // Integer literals

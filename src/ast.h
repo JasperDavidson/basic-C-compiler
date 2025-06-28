@@ -39,7 +39,13 @@ enum class OperationType {
   GREATER_THAN,
   LESS_THAN,
   GREATER_THAN_EQUAL,
-  LESS_THAN_EQUAL
+  LESS_THAN_EQUAL,
+  MODULO,
+  BITWISE_AND,
+  BITWISE_OR,
+  BITWISE_XOR,
+  BITWISE_SHIFT_LEFT,
+  BITWISE_SHIFT_RIGHT
 };
 
 std::string type_to_string(VariableType variable_type);

@@ -11,11 +11,15 @@ Grammer for the parser:
 <function> ::= "int" <id> "(" ")" "{" { <statement> } "}"
 <statement> ::= "return" <expr> ";"
 <expr> ::= <logical_and_expr> { "||" <logical_and_expr> }
-<logical_and_expr> ::= <equality_expr> { "&&" <equality_expr> }
+<logical_and_expr> ::= <bitwise_or_expr> { "&&" <bitwise_or_expr> }
+<bitwise_or_expr> ::= <bitwise_xor__expr> { "|" <bitwise_xor_expr> }
+<bitwise_xor_expr> ::= <bitwise_and_expr> { "^" <bitwise_and_expr> }
+<bitwise_and_expr> ::= <equality_expr> { "&" <equality_expr> }
 <equality_expr> ::= <relational_expr> { ("==" | "!=") <relational_expr> }
-<relational_expr> ::= <additive_expr> { ("<" | ">" | "<=" | ">=")
+<relational_expr> ::= <bitshift_expr> { ("<" | ">" | "<=" | ">=")
+<bitshift_expr> } <bitshift_expr> ::= <additive_expr> { ("<<" | ">>")
 <additive_expr> } <additive_expr> ::= <term> { ("+" | "-") <term> } <term> ::=
-<factor> { ("*" | "/") <factor> } <factor> ::= "(" <expr> ")" | <unary_op>
+<factor> { ("*" | "/" | "%") <factor> } <factor> ::= "(" <expr> ")" | <unary_op>
 <factor> | int <unary_op> ::= "!" | "~" | "-"
 
 The expression grammar is designed this way for two key reasons. First, it
@@ -76,11 +80,23 @@ private:
   // Corresponds to the 'logical_and_expr' rule
   std::unique_ptr<ExprAST> parse_logical_and();
 
+  // Corresponds to the 'bitwise_or_expr' rule
+  std::unique_ptr<ExprAST> parse_bitwise_or();
+
+  // Corresponds to the 'bitwise_xor_expr' rule
+  std::unique_ptr<ExprAST> parse_bitwise_xor();
+
+  // Corresponds to the 'bitwise_and_expr' rule
+  std::unique_ptr<ExprAST> parse_bitwise_and();
+
   // Corresponds to the 'equality_expr' rule
   std::unique_ptr<ExprAST> parse_equality();
 
   // Corresponds to the 'relational_expr' rule
   std::unique_ptr<ExprAST> parse_relational();
+
+  // Corresponds to the 'bitshift_expr' rule
+  std::unique_ptr<ExprAST> parse_bitshift();
 
   // Corresponds to the 'additive_expr' rule
   std::unique_ptr<ExprAST> parse_additive();

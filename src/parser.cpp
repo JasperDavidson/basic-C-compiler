@@ -82,6 +82,18 @@ OperationType Parser::parse_operator() {
     return OperationType::GREATER_THAN;
   case TokenType::GREATER_THAN_EQUAL:
     return OperationType::GREATER_THAN_EQUAL;
+  case TokenType::MODULO:
+    return OperationType::MODULO;
+  case TokenType::BITWISE_AND:
+    return OperationType::BITWISE_AND;
+  case TokenType::BITWISE_OR:
+    return OperationType::BITWISE_OR;
+  case TokenType::BITWISE_XOR:
+    return OperationType::BITWISE_XOR;
+  case TokenType::BITWISE_LEFT_SHIFT:
+    return OperationType::BITWISE_SHIFT_LEFT;
+  case TokenType::BITWISE_RIGHT_SHIFT:
+    return OperationType::BITWISE_SHIFT_RIGHT;
   default:
     throw std::runtime_error("Syntax Error: Expected an operator");
   }
@@ -140,9 +152,9 @@ std::unique_ptr<ExprAST> Parser::parse_factor() {
 std::unique_ptr<ExprAST> Parser::parse_term() {
   std::unique_ptr<ExprAST> factor = parse_factor();
 
-  while (check(TokenType::MULT) || check(TokenType::DIVIDE)) {
+  while (check(TokenType::MULT) || check(TokenType::DIVIDE) ||
+         check(TokenType::MODULO)) {
     OperationType op = parse_operator();
-    // advance(); // Consume the '*' or '/'
     auto next_factor = parse_factor();
 
     factor = std::make_unique<BinaryOpExpr>(op, std::move(factor),
@@ -166,12 +178,11 @@ std::unique_ptr<ExprAST> Parser::parse_additive() {
   return term;
 }
 
-std::unique_ptr<ExprAST> Parser::parse_relational() {
+std::unique_ptr<ExprAST> Parser::parse_bitshift() {
   std::unique_ptr<ExprAST> additive_expr = parse_additive();
 
-  while (check(TokenType::LESS_THAN) || check(TokenType::GREATER_THAN) ||
-         check(TokenType::LESS_THAN_EQUAL) ||
-         check(TokenType::GREATER_THAN_EQUAL)) {
+  while (check(TokenType::BITWISE_LEFT_SHIFT) ||
+         check(TokenType::BITWISE_RIGHT_SHIFT)) {
     OperationType op = parse_operator();
     auto next_additive = parse_additive();
 
@@ -180,6 +191,22 @@ std::unique_ptr<ExprAST> Parser::parse_relational() {
   }
 
   return additive_expr;
+}
+
+std::unique_ptr<ExprAST> Parser::parse_relational() {
+  std::unique_ptr<ExprAST> bitshift_expr = parse_bitshift();
+
+  while (check(TokenType::LESS_THAN) || check(TokenType::GREATER_THAN) ||
+         check(TokenType::LESS_THAN_EQUAL) ||
+         check(TokenType::GREATER_THAN_EQUAL)) {
+    OperationType op = parse_operator();
+    auto next_bitshift = parse_bitshift();
+
+    bitshift_expr = std::make_unique<BinaryOpExpr>(op, std::move(bitshift_expr),
+                                                   std::move(next_bitshift));
+  }
+
+  return bitshift_expr;
 }
 
 std::unique_ptr<ExprAST> Parser::parse_equality() {
@@ -196,10 +223,10 @@ std::unique_ptr<ExprAST> Parser::parse_equality() {
   return relational_expr;
 }
 
-std::unique_ptr<ExprAST> Parser::parse_logical_and() {
+std::unique_ptr<ExprAST> Parser::parse_bitwise_and() {
   std::unique_ptr<ExprAST> equality_expr = parse_equality();
 
-  while (check(TokenType::AND)) {
+  while (check(TokenType::BITWISE_AND)) {
     OperationType op = parse_operator();
     auto next_equality = parse_equality();
 
@@ -208,6 +235,48 @@ std::unique_ptr<ExprAST> Parser::parse_logical_and() {
   }
 
   return equality_expr;
+}
+
+std::unique_ptr<ExprAST> Parser::parse_bitwise_xor() {
+  std::unique_ptr<ExprAST> bitwise_and_expr = parse_bitwise_and();
+
+  while (check(TokenType::BITWISE_XOR)) {
+    OperationType op = parse_operator();
+    auto next_bitand_expr = parse_bitwise_and();
+
+    bitwise_and_expr = std::make_unique<BinaryOpExpr>(
+        op, std::move(bitwise_and_expr), std::move(next_bitand_expr));
+  }
+
+  return bitwise_and_expr;
+}
+
+std::unique_ptr<ExprAST> Parser::parse_bitwise_or() {
+  std::unique_ptr<ExprAST> bitwise_xor_expr = parse_bitwise_xor();
+
+  while (check(TokenType::BITWISE_OR)) {
+    OperationType op = parse_operator();
+    auto next_bitxor_expr = parse_bitwise_xor();
+
+    bitwise_xor_expr = std::make_unique<BinaryOpExpr>(
+        op, std::move(bitwise_xor_expr), std::move(next_bitxor_expr));
+  }
+
+  return bitwise_xor_expr;
+}
+
+std::unique_ptr<ExprAST> Parser::parse_logical_and() {
+  std::unique_ptr<ExprAST> bitwise_or_expr = parse_bitwise_or();
+
+  while (check(TokenType::AND)) {
+    OperationType op = parse_operator();
+    auto next_bitor_expr = parse_bitwise_or();
+
+    bitwise_or_expr = std::make_unique<BinaryOpExpr>(
+        op, std::move(bitwise_or_expr), std::move(next_bitor_expr));
+  }
+
+  return bitwise_or_expr;
 }
 
 std::unique_ptr<ExprAST> Parser::parse_expression() {

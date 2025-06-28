@@ -79,6 +79,24 @@ void AstPrinter::visit(const BinaryOpExpr *expr) {
   case OperationType::GREATER_THAN_EQUAL:
     std::cout << " Greater Than or Equal ";
     break;
+  case OperationType::MODULO:
+    std::cout << " Modulo ";
+    break;
+  case OperationType::BITWISE_AND:
+    std::cout << " Bitwise And ";
+    break;
+  case OperationType::BITWISE_OR:
+    std::cout << " Bitwise Or ";
+    break;
+  case OperationType::BITWISE_XOR:
+    std::cout << " Bitwise Xor ";
+    break;
+  case OperationType::BITWISE_SHIFT_LEFT:
+    std::cout << " Bitwise Shift Left ";
+    break;
+  case OperationType::BITWISE_SHIFT_RIGHT:
+    std::cout << " Bitwise Shift Right ";
+    break;
   default:
     throw std::runtime_error("Expected a binary operation");
   }
