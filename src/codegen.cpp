@@ -61,7 +61,8 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
   // Determine the operation and combine the two expressions
 
   if (expr->op == OperationType::ADD || expr->op == OperationType::NEGATE ||
-      expr->op == OperationType::MULT || expr->op == OperationType::DIVIDE) {
+      expr->op == OperationType::MULT || expr->op == OperationType::DIVIDE || expr->op == OperationType::BITWISE_AND || expr->op == OperationType::BITWISE_OR ||
+      expr->op == OperationType::BITWISE_XOR || expr->op == OperationType::MODULO) {
     // Compute the second expression and save it to x0
     asm_file << "\n\tstr\tx0, [sp, #-16]!";
     asm_file << "\n\tmov\tx0, "; // Is this line needed?
@@ -83,6 +84,19 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
     case OperationType::DIVIDE:
       asm_file << "sdiv\t";
       break;
+    case OperationType::BITWISE_AND:
+      asm_file << "and\t";
+      break;
+    case OperationType::BITWISE_OR:
+      asm_file << "orr\t";
+      break;
+    case OperationType::BITWISE_XOR:
+      asm_file << "eor\t";
+      break;
+    case OperationType::MODULO:
+      asm_file << "sdiv\tx2, x1, x0\n\t";
+      asm_file << "msub\tx0, x0, x2, x1";
+      return;
     default:
       __builtin_unreachable();
     }
@@ -175,6 +189,25 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
       break;
     default:
       __builtin_unreachable();
+    }
+  } else if (expr->op == OperationType::BITWISE_SHIFT_LEFT || expr->op == OperationType::BITWISE_SHIFT_RIGHT) {
+    // Compute the second expression and save it to x0
+    asm_file << "\n\tstr\tx0, [sp, #-16]!";
+    asm_file << "\n\tmov\tx0, "; // Is this line needed?
+    expr->expr_two->accept(this);
+
+    asm_file << "\n\tldr\tx1, [sp], #16";
+    
+    asm_file << "\n\t";
+    switch (expr->op) {
+      case OperationType::BITWISE_SHIFT_LEFT:
+        asm_file << "lsl\tx0, x1, x0";
+        break;
+      case OperationType::BITWISE_SHIFT_RIGHT:
+        asm_file << "asr\tx0, x1, x0";
+        break;
+      default:
+        __builtin_unreachable();
     }
   }
 }
