@@ -9,18 +9,21 @@ Grammer for the parser:
 
 <program> ::= <function>
 <function> ::= "int" <id> "(" ")" "{" { <statement> } "}"
-<statement> ::= "return" <expr> ";"
-<expr> ::= <logical_and_expr> { "||" <logical_and_expr> }
-<logical_and_expr> ::= <bitwise_or_expr> { "&&" <bitwise_or_expr> }
-<bitwise_or_expr> ::= <bitwise_xor__expr> { "|" <bitwise_xor_expr> }
-<bitwise_xor_expr> ::= <bitwise_and_expr> { "^" <bitwise_and_expr> }
-<bitwise_and_expr> ::= <equality_expr> { "&" <equality_expr> }
-<equality_expr> ::= <relational_expr> { ("==" | "!=") <relational_expr> }
-<relational_expr> ::= <bitshift_expr> { ("<" | ">" | "<=" | ">=")
-<bitshift_expr> } <bitshift_expr> ::= <additive_expr> { ("<<" | ">>")
-<additive_expr> } <additive_expr> ::= <term> { ("+" | "-") <term> } <term> ::=
-<factor> { ("*" | "/" | "%") <factor> } <factor> ::= "(" <expr> ")" | <unary_op>
-<factor> | int <unary_op> ::= "!" | "~" | "-"
+<statement> ::= "return" <expr> ";" | <variable_type> <id> [ = <expr> ] ";" |
+<expr> ";" <variable_type> ::= "int"
+";"
+<expr> ::= <id> "=" <expr>  | <logical_or_expr>
+<logical_or_expr> ::= <logical_and_expr> { "||" <logical_and_expr> }
+<logical_and_expr>
+::= <bitwise_or_expr> { "&&" <bitwise_or_expr> } <bitwise_or_expr> ::=
+<bitwise_xor__expr> { "|" <bitwise_xor_expr> } <bitwise_xor_expr> ::=
+<bitwise_and_expr> { "^" <bitwise_and_expr> } <bitwise_and_expr> ::=
+<equality_expr> { "&" <equality_expr> } <equality_expr> ::= <relational_expr> {
+("==" | "!=") <relational_expr> } <relational_expr> ::= <bitshift_expr> { ("<" |
+">" | "<=" | ">=") <bitshift_expr> } <bitshift_expr> ::= <additive_expr> { ("<<"
+| ">>") <additive_expr> } <additive_expr> ::= <term> { ("+" | "-") <term> }
+<term> ::= <factor> { ("*" | "/" | "%") <factor> } <factor> ::= "(" <expr> ")" |
+<unary_op> <factor> | int <unary_op> ::= "!" | "~" | "-"
 
 The expression grammar is designed this way for two key reasons. First, it
 avoids infinite left recursion that something like <expr> ::= <expr> (operation)
@@ -70,12 +73,15 @@ private:
   OperationType parse_operator();
 
   // Helper to parse parameters from a function
-  std::vector<std::unique_ptr<VariableDecl>> parse_func_parameters();
+  std::vector<std::unique_ptr<VariableDeclStmt>> parse_func_parameters();
 
   /* Grammar Matching Methods */
 
   // Corresponds to the 'expr' rule
   std::unique_ptr<ExprAST> parse_expression();
+
+  // Corresponds to the 'logical_or_expr' role
+  std::unique_ptr<ExprAST> parse_logical_or();
 
   // Corresponds to the 'logical_and_expr' rule
   std::unique_ptr<ExprAST> parse_logical_and();

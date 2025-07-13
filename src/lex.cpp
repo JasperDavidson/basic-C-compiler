@@ -172,6 +172,7 @@ std::vector<Token> lex(const std::string &file_path) {
           break;
         }
 
+        file_tokens.push_back(Token(TokenType::ASSIGN, std::monostate()));
         break;
       case '%':
         file_tokens.push_back(Token(TokenType::MODULO, std::monostate()));

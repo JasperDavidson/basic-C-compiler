@@ -27,6 +27,7 @@ enum class TokenType {
   BITWISE_XOR,
   BITWISE_LEFT_SHIFT,
   BITWISE_RIGHT_SHIFT,
+  ASSIGN,
 
   // Logic
   AND,

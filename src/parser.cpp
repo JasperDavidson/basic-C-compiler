@@ -13,7 +13,8 @@ bool Parser::check(const TokenType &type) {
   return tokens[current_token].token_type == type;
 }
 
-Token Parser::consume(const TokenType &type, const std::string &error_message) {
+Token Parser::consume(const TokenType &type,
+                      const std::string &error_message = "") {
   if (check(type))
     return advance();
   throw std::runtime_error(error_message);
@@ -99,11 +100,11 @@ OperationType Parser::parse_operator() {
   }
 }
 
-std::vector<std::unique_ptr<VariableDecl>> Parser::parse_func_parameters() {
+std::vector<std::unique_ptr<VariableDeclStmt>> Parser::parse_func_parameters() {
   consume(TokenType::OPEN_PAREN,
           "Incorrect function definition, check parentheses");
 
-  std::vector<std::unique_ptr<VariableDecl>> parameters;
+  std::vector<std::unique_ptr<VariableDeclStmt>> parameters;
   if (!check(TokenType::CLOSE_PAREN)) {
     do {
       VariableType param_type = parse_type();
@@ -112,7 +113,7 @@ std::vector<std::unique_ptr<VariableDecl>> Parser::parse_func_parameters() {
       std::string param_name = std::get<std::string>(param_token.literal);
 
       parameters.push_back(
-          std::make_unique<VariableDecl>(param_type, param_name));
+          std::make_unique<VariableDeclStmt>(param_type, param_name, nullptr));
     } while (check_advance(TokenType::COMMA));
   }
 
@@ -144,9 +145,9 @@ std::unique_ptr<ExprAST> Parser::parse_factor() {
         std::make_unique<IntLiteralExpr>(std::get<int>(num.literal));
 
     return num_expr;
+  } else {
+    return nullptr;
   }
-
-  throw std::runtime_error("Expected a 'factor'");
 }
 
 std::unique_ptr<ExprAST> Parser::parse_term() {
@@ -279,7 +280,7 @@ std::unique_ptr<ExprAST> Parser::parse_logical_and() {
   return bitwise_or_expr;
 }
 
-std::unique_ptr<ExprAST> Parser::parse_expression() {
+std::unique_ptr<ExprAST> Parser::parse_logical_or() {
   std::unique_ptr<ExprAST> and_expr = parse_logical_and();
 
   while (check(TokenType::OR)) {
@@ -293,15 +294,59 @@ std::unique_ptr<ExprAST> Parser::parse_expression() {
   return and_expr;
 }
 
+std::unique_ptr<ExprAST> Parser::parse_expression() {
+  std::unique_ptr<ExprAST> expr;
+
+  if (check(TokenType::IDENTIFIER)) {
+    std::string var_name =
+        std::get<std::string>(consume(TokenType::IDENTIFIER).literal);
+
+    consume(TokenType::ASSIGN, "Incorrect Assignment: Check if the assignment "
+                               "operator ('=') is correct");
+
+    auto expr = parse_expression();
+
+    if (expr == nullptr) {
+      throw std::runtime_error(
+          "Expected an expression after variable assignment declared");
+    }
+  } else if (check(TokenType::OR)) {
+    expr = parse_logical_or();
+  }
+
+  return expr;
+}
+
 std::unique_ptr<StmtAST> Parser::parse_statement() {
   if (check(TokenType::RETURN)) {
     advance(); // Consume the return token
     auto expr = parse_expression();
+
     consume(TokenType::SEMICOLON, "Expected ';' after return value");
     return std::make_unique<ReturnStmt>(std::move(expr));
-  }
+  } else if (check(TokenType::INT_TYPE)) {
+    // TODO: Find a better way to do this with types in general --> what if a
+    // user is eventually defining their own custom types?
+    VariableType var_type = parse_type();
+    std::string var_name = std::get<std::string>(
+        consume(
+            TokenType::IDENTIFIER,
+            "Incorrect variable declaration: Check if the variable has a name")
+            .literal);
+    auto expr = parse_expression();
 
-  throw std::runtime_error("Expected a statement");
+    consume(TokenType::SEMICOLON, "Expected ';' after variable declaration");
+    return std::make_unique<VariableDeclStmt>(var_type, var_name,
+                                              std::move(expr));
+  } else { // Assume it's an expression
+    auto expr = parse_expression();
+
+    if (expr == nullptr) {
+      throw std::runtime_error("Invalid statement expression: nullptr");
+    }
+
+    return std::make_unique<ExprStmt>(std::move(expr));
+  }
 }
 
 std::unique_ptr<FunctionDecl> Parser::parse_function() {
@@ -310,10 +355,11 @@ std::unique_ptr<FunctionDecl> Parser::parse_function() {
       consume(TokenType::IDENTIFIER,
               "Incorrect function definition: Check function identifier")
           .literal);
-  std::vector<std::unique_ptr<VariableDecl>> func_parameters =
+  std::vector<std::unique_ptr<VariableDeclStmt>> func_parameters =
       parse_func_parameters();
   consume(TokenType::OPEN_BRACE, "Incorrect function definition: Check braces");
 
+  // TODO: Handle multiple statements in a function
   auto statement =
       parse_statement(); // Assume the function has only one statement for now
                          // (the return statement)

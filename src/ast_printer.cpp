@@ -1,6 +1,7 @@
 #include "ast_printer.h"
 #include "ast.h"
 
+#include <cstddef>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -65,7 +66,7 @@ void AstPrinter::visit(const BinaryOpExpr *expr) {
     std::cout << " Equal ";
     break;
   case OperationType::NOT_EQUAL:
-    std::cout << " Not Equa l";
+    std::cout << " Not Equal ";
     break;
   case OperationType::LESS_THAN:
     std::cout << " Less Than ";
@@ -104,6 +105,15 @@ void AstPrinter::visit(const BinaryOpExpr *expr) {
   expr->expr_two->accept(this);
 }
 
+void AstPrinter::visit(const VariableAssignExpr *expr) {
+  print_indent();
+  std::cout << "VariableAssignment" << expr->var_name << " = ";
+
+  expr->assign_expr->accept(this);
+
+  std::cout << '\n';
+}
+
 void AstPrinter::visit(const ReturnStmt *stmt) {
   print_indent();
   std::cout << "ReturnStmt ";
@@ -115,10 +125,27 @@ void AstPrinter::visit(const ReturnStmt *stmt) {
   std::cout << '\n';
 }
 
-void AstPrinter::visit(const VariableDecl *decl) {
+void AstPrinter::visit(const VariableDeclStmt *stmt) {
   print_indent();
-  std::cout << "VariableDecl " << type_to_string(decl->type) << " "
-            << decl->name << "\n";
+  std::cout << "VariableDecl " << type_to_string(stmt->type) << " "
+            << stmt->name << " = ";
+
+  if (stmt->decl_expr != nullptr) {
+    stmt->decl_expr->accept(this);
+  } else {
+    std::cout << "init";
+  }
+
+  std::cout << '\n';
+}
+
+void AstPrinter::visit(const ExprStmt *stmt) {
+  print_indent();
+  std::cout << "ExprStmt ";
+
+  stmt->expr->accept(this);
+
+  std::cout << '\n';
 }
 
 void AstPrinter::visit(const FunctionDecl *decl) {
