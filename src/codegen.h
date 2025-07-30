@@ -13,12 +13,14 @@ public:
   void visit(const VariableExpr *expr) override;
   void visit(const UnaryOpExpr *expr) override;
   void visit(const BinaryOpExpr *expr) override;
+  void visit(const VariableAssignExpr *expr) override;
 
   // Fulfilling the StmtVisitor contract
+  void visit(const VariableDeclStmt *stmt) override;
   void visit(const ReturnStmt *stmt) override;
+  void visit(const ExprStmt *stmt) override;
 
   // Fulfilling the DeclVisitor contract
-  void visit(const VariableDecl *decl) override;
   void visit(const FunctionDecl *decl) override;
 
 private:

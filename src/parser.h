@@ -52,6 +52,9 @@ private:
   // Helper to check the type of the current token without consuming it
   bool check(const TokenType &type);
 
+  // Helper to check the type of the next token in the stream without consuming it or the prior
+  bool check_next(const TokenType &type);
+
   // Helper to consume the current token, throws an error if it's not of the
   // passed (assumed to be correct) type
   Token consume(const TokenType &type, const std::string &error_message);

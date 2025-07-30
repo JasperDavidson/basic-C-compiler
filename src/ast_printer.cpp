@@ -107,7 +107,7 @@ void AstPrinter::visit(const BinaryOpExpr *expr) {
 
 void AstPrinter::visit(const VariableAssignExpr *expr) {
   print_indent();
-  std::cout << "VariableAssignment" << expr->var_name << " = ";
+  std::cout << "VariableAssignment " << expr->var_name << " = ";
 
   expr->assign_expr->accept(this);
 

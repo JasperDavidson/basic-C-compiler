@@ -61,8 +61,11 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
   // Determine the operation and combine the two expressions
 
   if (expr->op == OperationType::ADD || expr->op == OperationType::NEGATE ||
-      expr->op == OperationType::MULT || expr->op == OperationType::DIVIDE || expr->op == OperationType::BITWISE_AND || expr->op == OperationType::BITWISE_OR ||
-      expr->op == OperationType::BITWISE_XOR || expr->op == OperationType::MODULO) {
+      expr->op == OperationType::MULT || expr->op == OperationType::DIVIDE ||
+      expr->op == OperationType::BITWISE_AND ||
+      expr->op == OperationType::BITWISE_OR ||
+      expr->op == OperationType::BITWISE_XOR ||
+      expr->op == OperationType::MODULO) {
     // Compute the second expression and save it to x0
     asm_file << "\n\tstr\tx0, [sp, #-16]!";
     asm_file << "\n\tmov\tx0, "; // Is this line needed?
@@ -190,24 +193,25 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
     default:
       __builtin_unreachable();
     }
-  } else if (expr->op == OperationType::BITWISE_SHIFT_LEFT || expr->op == OperationType::BITWISE_SHIFT_RIGHT) {
+  } else if (expr->op == OperationType::BITWISE_SHIFT_LEFT ||
+             expr->op == OperationType::BITWISE_SHIFT_RIGHT) {
     // Compute the second expression and save it to x0
     asm_file << "\n\tstr\tx0, [sp, #-16]!";
     asm_file << "\n\tmov\tx0, "; // Is this line needed?
     expr->expr_two->accept(this);
 
     asm_file << "\n\tldr\tx1, [sp], #16";
-    
+
     asm_file << "\n\t";
     switch (expr->op) {
-      case OperationType::BITWISE_SHIFT_LEFT:
-        asm_file << "lsl\tx0, x1, x0";
-        break;
-      case OperationType::BITWISE_SHIFT_RIGHT:
-        asm_file << "asr\tx0, x1, x0";
-        break;
-      default:
-        __builtin_unreachable();
+    case OperationType::BITWISE_SHIFT_LEFT:
+      asm_file << "lsl\tx0, x1, x0";
+      break;
+    case OperationType::BITWISE_SHIFT_RIGHT:
+      asm_file << "asr\tx0, x1, x0";
+      break;
+    default:
+      __builtin_unreachable();
     }
   }
 }
@@ -219,9 +223,6 @@ void AstAssembly::visit(const ReturnStmt *stmt) {
 
   asm_file << "\n\tret";
 }
-
-// Implement later
-void AstAssembly::visit(const VariableDecl *decl) {}
 
 void AstAssembly::visit(const FunctionDecl *decl) {
   asm_file << "\t.globl _" << decl->name << "\n_" << decl->name << ":\n";

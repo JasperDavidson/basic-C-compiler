@@ -1,3 +1,11 @@
 int main() {
-    return 1 & 2 | (10 % 5) << 3 | (5 >> 3) ^ (3 << 3);
+	int x = 2;
+	int y = 3;
+
+	x = y * x;
+	y = x * 2;
+
+	int z = x * y * 3;
+
+	return z;
 }

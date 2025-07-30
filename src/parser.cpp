@@ -2,6 +2,8 @@
 #include "ast.h"
 #include "lex.h"
 
+#include <cstddef>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 
@@ -11,6 +13,21 @@ bool Parser::check(const TokenType &type) {
   if (is_at_end())
     return false;
   return tokens[current_token].token_type == type;
+}
+
+bool Parser::check_next(const TokenType &type) {
+  int temp_cur = current_token;
+  current_token++;
+
+  if (is_at_end()) {
+    current_token = temp_cur;
+    return false;
+  }
+
+  bool return_val = tokens[current_token].token_type == type;
+  current_token = temp_cur;
+
+  return return_val;
 }
 
 Token Parser::consume(const TokenType &type,
@@ -124,30 +141,34 @@ std::vector<std::unique_ptr<VariableDeclStmt>> Parser::parse_func_parameters() {
 }
 
 std::unique_ptr<ExprAST> Parser::parse_factor() {
+  std::unique_ptr<ExprAST> factor_expr;
+
   if (check(TokenType::OPEN_PAREN)) {
     consume(TokenType::OPEN_PAREN, "Expected an open parenthesis");
 
-    auto expr = parse_expression();
+    factor_expr = parse_expression();
     consume(TokenType::CLOSE_PAREN,
             "Parentheses mismatch on bounded expression");
-
-    return expr;
   } else if (check(TokenType::NEGATE) || check(TokenType::BITWISE) ||
              check(TokenType::LOGIC_NEGATE)) {
     OperationType op = parse_operator();
     auto factor = parse_factor();
-    auto un_op = std::make_unique<UnaryOpExpr>(op, std::move(factor));
 
-    return un_op;
+    factor_expr = std::make_unique<UnaryOpExpr>(op, std::move(factor));
   } else if (check(TokenType::INT)) {
     Token num = advance();
-    auto num_expr =
-        std::make_unique<IntLiteralExpr>(std::get<int>(num.literal));
 
-    return num_expr;
-  } else {
-    return nullptr;
+    factor_expr = std::make_unique<IntLiteralExpr>(std::get<int>(num.literal));
+  } else if (check(TokenType::IDENTIFIER)) {
+    Token var = advance();
+    std::string var_name = std::get<std::string>(var.literal);
+
+    std::cout << var_name << '\n';
+
+    factor_expr = std::make_unique<VariableExpr>(var_name);
   }
+
+  return factor_expr;
 }
 
 std::unique_ptr<ExprAST> Parser::parse_term() {
@@ -155,6 +176,7 @@ std::unique_ptr<ExprAST> Parser::parse_term() {
 
   while (check(TokenType::MULT) || check(TokenType::DIVIDE) ||
          check(TokenType::MODULO)) {
+    std::cout << "Encountered mult\n";
     OperationType op = parse_operator();
     auto next_factor = parse_factor();
 
@@ -297,20 +319,33 @@ std::unique_ptr<ExprAST> Parser::parse_logical_or() {
 std::unique_ptr<ExprAST> Parser::parse_expression() {
   std::unique_ptr<ExprAST> expr;
 
+  // TODO: Add check for if the expression is just a reference to a variable
+
+  // TODO: What if the reference is part of a broader expression, like (y *
+  // 2)?
+
   if (check(TokenType::IDENTIFIER)) {
-    std::string var_name =
-        std::get<std::string>(consume(TokenType::IDENTIFIER).literal);
+    // Expression path for assigning a value to a variable
+    if (check_next(TokenType::ASSIGN)) {
+      Token var = advance();
+      std::string var_name = std::get<std::string>(var.literal);
 
-    consume(TokenType::ASSIGN, "Incorrect Assignment: Check if the assignment "
-                               "operator ('=') is correct");
+      consume(TokenType::ASSIGN, "Expected assignment operator '='");
 
-    auto expr = parse_expression();
+      auto assign_expr = parse_expression();
 
-    if (expr == nullptr) {
-      throw std::runtime_error(
-          "Expected an expression after variable assignment declared");
+      if (assign_expr == nullptr) {
+        throw std::runtime_error(
+            "Expected an expression after variable assignment declared");
+      }
+
+      expr = std::make_unique<VariableAssignExpr>(var_name,
+                                                  std::move(assign_expr));
+    } else {
+      expr = parse_logical_or();
     }
-  } else if (check(TokenType::OR)) {
+  } else {
+    // Expression path for all logical expressions
     expr = parse_logical_or();
   }
 
@@ -325,21 +360,35 @@ std::unique_ptr<StmtAST> Parser::parse_statement() {
     consume(TokenType::SEMICOLON, "Expected ';' after return value");
     return std::make_unique<ReturnStmt>(std::move(expr));
   } else if (check(TokenType::INT_TYPE)) {
+    std::cout << "Parsing var init\n";
     // TODO: Find a better way to do this with types in general --> what if a
     // user is eventually defining their own custom types?
     VariableType var_type = parse_type();
-    std::string var_name = std::get<std::string>(
-        consume(
-            TokenType::IDENTIFIER,
-            "Incorrect variable declaration: Check if the variable has a name")
-            .literal);
-    auto expr = parse_expression();
+    std::string var_name =
+        std::get<std::string>(consume(TokenType::IDENTIFIER).literal);
+
+    // TODO: How exactly should we handle parsing VariableAssignExpr vs.
+    // VariableDeclStmt? One has nullptr as a valid expression
+    // (VariableDeclStmt, since a variable can be declared without assignment),
+    // but assignment with no expression to attach to is invalid
+    // Maybe check if the decl statement even has assignment first (check for
+    // equal sign/semicolon)
+
+    std::unique_ptr<ExprAST> expr = nullptr;
+
+    if (check(TokenType::ASSIGN)) {
+      consume(TokenType::ASSIGN);
+      expr = parse_expression();
+    }
 
     consume(TokenType::SEMICOLON, "Expected ';' after variable declaration");
     return std::make_unique<VariableDeclStmt>(var_type, var_name,
                                               std::move(expr));
   } else { // Assume it's an expression
+    std::cout << "parsing expr_stmt\n";
     auto expr = parse_expression();
+
+    consume(TokenType::SEMICOLON, "Expected ';' after expression");
 
     if (expr == nullptr) {
       throw std::runtime_error("Invalid statement expression: nullptr");
@@ -359,13 +408,14 @@ std::unique_ptr<FunctionDecl> Parser::parse_function() {
       parse_func_parameters();
   consume(TokenType::OPEN_BRACE, "Incorrect function definition: Check braces");
 
-  // TODO: Handle multiple statements in a function
-  auto statement =
-      parse_statement(); // Assume the function has only one statement for now
-                         // (the return statement)
-
   std::vector<std::unique_ptr<StmtAST>> body;
-  body.push_back(std::move(statement));
+
+  // TODO: Think about how safe this is/isn't: What if the user just forgets the
+  // closing brace? The compiler should throw an error
+  while (!check(TokenType::CLOSE_BRACE)) {
+    auto statement = parse_statement();
+    body.push_back(std::move(statement));
+  }
 
   consume(TokenType::CLOSE_BRACE,
           "Incoreect function definition: Check braces");

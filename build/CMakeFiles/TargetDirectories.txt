@@ -1,0 +1,3 @@
+/Users/jasperdavidson/code/basic-C-compiler/build/CMakeFiles/test.dir
+/Users/jasperdavidson/code/basic-C-compiler/build/CMakeFiles/edit_cache.dir
+/Users/jasperdavidson/code/basic-C-compiler/build/CMakeFiles/rebuild_cache.dir
