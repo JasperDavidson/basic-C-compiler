@@ -5,6 +5,13 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
+#include <iostream>
+
+// Keep track of variables in current stack frame
+std::unordered_map<std::string, int> stack_variables;
+int stack_index = 0;
+int STACK_DIFFERENCE = 16;
 
 std::string AstAssembly::label_gen() {
   std::string base_label = "_label_";
@@ -214,6 +221,28 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
       __builtin_unreachable();
     }
   }
+}
+
+void AstAssembly::visit(const VariableAssignExpr *stmt) {
+  int var_address_offset = stack_variables[stmt->var_name];
+
+  // Store the assignment expression result in x0, then store it in the stack
+  stmt->assign_expr->accept(this);
+  asm_file << "\n\tstr\tx0, [fp, #-" << var_address_offset << "]";
+}
+
+void AstAssembly::visit(const VariableDeclStmt *stmt) {
+  // Check if the variable is already delcared in the stack
+  if (stack_variables.find(stmt->name) != stack_variables.end()) {
+    throw std::runtime_error("Attempted to declare variable '" + stmt->name +
+                             "' multiple times");
+  }
+
+  // Visit the variable assignment expression and push it to x0
+  stmt->decl_expr->accept(this);
+  asm_file << "\n\tstr\tx0, [sp, #-16]!";
+  stack_index -= STACK_DIFFERENCE;
+  stack_variables[stmt->name] = stack_index;
 }
 
 void AstAssembly::visit(const ReturnStmt *stmt) {
