@@ -10,9 +10,9 @@ public:
 
   // Fulfilling ExprVisitor contract
   void visit(const IntLiteralExpr *expr) override;
-  void visit(const VariableExpr *expr) override;
   void visit(const UnaryOpExpr *expr) override;
   void visit(const BinaryOpExpr *expr) override;
+  void visit(const VariableExpr *expr) override;
   void visit(const VariableAssignExpr *expr) override;
 
   // Fulfilling the StmtVisitor contract
@@ -26,6 +26,12 @@ public:
 private:
   std::ofstream asm_file;
   int label_num = 0;
+
+
+  // Keep track of variables in current stack frame
+  std::unordered_map<std::string, int> stack_variables;
+  int stack_index = 0;
+  int STACK_DIFFERENCE = 16;
 
   // Helper function to generate unique labels
   std::string label_gen();

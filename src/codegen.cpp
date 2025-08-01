@@ -3,15 +3,11 @@
 
 #include <fstream>
 #include <memory>
+#include <stack>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <iostream>
-
-// Keep track of variables in current stack frame
-std::unordered_map<std::string, int> stack_variables;
-int stack_index = 0;
-int STACK_DIFFERENCE = 16;
 
 std::string AstAssembly::label_gen() {
   std::string base_label = "_label_";
@@ -29,11 +25,8 @@ void AstAssembly::generate(DeclAST *root_node, std::string asm_file_name) {
 }
 
 void AstAssembly::visit(const IntLiteralExpr *expr) {
-  asm_file << "#" << std::to_string(expr->value);
+  asm_file << "\n\tmov\tx0, #" << std::to_string(expr->value);
 }
-
-// Implement later
-void AstAssembly::visit(const VariableExpr *expr) {}
 
 void AstAssembly::visit(const UnaryOpExpr *expr) {
   expr->expr->accept(this);
@@ -75,7 +68,6 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
       expr->op == OperationType::MODULO) {
     // Compute the second expression and save it to x0
     asm_file << "\n\tstr\tx0, [sp, #-16]!";
-    asm_file << "\n\tmov\tx0, "; // Is this line needed?
     expr->expr_two->accept(this);
 
     asm_file << "\n\tldr\tx1, [sp], #16";
@@ -120,7 +112,6 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
              expr->op == OperationType::GREATER_THAN_EQUAL) {
     // Compute the second expression and save it to x0
     asm_file << "\n\tstr\tx0, [sp, #-16]!";
-    asm_file << "\n\tmov\tx0, "; // Is this line needed?
     expr->expr_two->accept(this);
 
     asm_file << "\n\tldr\tx1, [sp], #16";
@@ -204,7 +195,6 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
              expr->op == OperationType::BITWISE_SHIFT_RIGHT) {
     // Compute the second expression and save it to x0
     asm_file << "\n\tstr\tx0, [sp, #-16]!";
-    asm_file << "\n\tmov\tx0, "; // Is this line needed?
     expr->expr_two->accept(this);
 
     asm_file << "\n\tldr\tx1, [sp], #16";
@@ -223,16 +213,22 @@ void AstAssembly::visit(const BinaryOpExpr *expr) {
   }
 }
 
-void AstAssembly::visit(const VariableAssignExpr *stmt) {
-  int var_address_offset = stack_variables[stmt->var_name];
+void AstAssembly::visit(const VariableExpr *expr) {
+  // Fetch the variable and move its data into x0
+  int var_address_offset = stack_variables[expr->name];
+  asm_file << "\n\tldr\tx0, [fp, #" << var_address_offset << "]";
+}
+
+void AstAssembly::visit(const VariableAssignExpr *expr) {
+  int var_address_offset = stack_variables[expr->var_name];
 
   // Store the assignment expression result in x0, then store it in the stack
-  stmt->assign_expr->accept(this);
+  expr->assign_expr->accept(this);
   asm_file << "\n\tstr\tx0, [fp, #-" << var_address_offset << "]";
 }
 
 void AstAssembly::visit(const VariableDeclStmt *stmt) {
-  // Check if the variable is already delcared in the stack
+  // Check if the variable is already declared in the stack
   if (stack_variables.find(stmt->name) != stack_variables.end()) {
     throw std::runtime_error("Attempted to declare variable '" + stmt->name +
                              "' multiple times");
@@ -245,16 +241,30 @@ void AstAssembly::visit(const VariableDeclStmt *stmt) {
   stack_variables[stmt->name] = stack_index;
 }
 
-void AstAssembly::visit(const ReturnStmt *stmt) {
-  asm_file << "\tmov\tx0, ";
-
+void AstAssembly::visit(const ExprStmt *stmt) {
   stmt->expr->accept(this);
+}
+
+void AstAssembly::visit(const ReturnStmt *stmt) {
+  // Move the return expression into x0
+  stmt->expr->accept(this);
+
+  // Function epilogue
+  // Restore the stack pointer to what it was before the function call and restore the old frame pointer
+  asm_file << "\n\tmov\tsp, fp";
+  asm_file << "\n\tldr\tfp, [sp], #" << STACK_DIFFERENCE;
 
   asm_file << "\n\tret";
 }
 
 void AstAssembly::visit(const FunctionDecl *decl) {
-  asm_file << "\t.globl _" << decl->name << "\n_" << decl->name << ":\n";
+  asm_file << "\t.globl _" << decl->name << "\n_" << decl->name << ":";
+  
+  // Function prologue
+  // Push the current frame pointer to the stack and load the stack pointer (pointing to the top of the stack) as the new frame pointer
+  stack_index = 0;
+  asm_file << "\n\tstr\tfp, [sp, #-16]!";
+  asm_file << "\n\tmov\tfp, sp";
 
   for (int i = 0; i < decl->body.size(); ++i) {
     decl->body[i]->accept(this);
