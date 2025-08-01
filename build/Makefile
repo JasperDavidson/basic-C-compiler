@@ -177,6 +177,30 @@ src/ast_printer.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/ast_printer.cpp.s
 .PHONY : src/ast_printer.cpp.s
 
+src/codegen.o: src/codegen.cpp.o
+.PHONY : src/codegen.o
+
+# target to build an object file
+src/codegen.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/codegen.cpp.o
+.PHONY : src/codegen.cpp.o
+
+src/codegen.i: src/codegen.cpp.i
+.PHONY : src/codegen.i
+
+# target to preprocess a source file
+src/codegen.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/codegen.cpp.i
+.PHONY : src/codegen.cpp.i
+
+src/codegen.s: src/codegen.cpp.s
+.PHONY : src/codegen.s
+
+# target to generate assembly for a file
+src/codegen.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/src/codegen.cpp.s
+.PHONY : src/codegen.cpp.s
+
 src/lex.o: src/lex.cpp.o
 .PHONY : src/lex.o
 
@@ -264,6 +288,9 @@ help:
 	@echo "... src/ast_printer.o"
 	@echo "... src/ast_printer.i"
 	@echo "... src/ast_printer.s"
+	@echo "... src/codegen.o"
+	@echo "... src/codegen.i"
+	@echo "... src/codegen.s"
 	@echo "... src/lex.o"
 	@echo "... src/lex.i"
 	@echo "... src/lex.s"

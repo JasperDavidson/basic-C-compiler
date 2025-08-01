@@ -7,7 +7,7 @@ set(SOURCE_FILES
     src/parser.cpp
     src/ast.cpp
     src/ast_printer.cpp
-#    src/codegen.cpp
+    src/codegen.cpp
 )
 
 add_executable(test ${SOURCE_FILES})

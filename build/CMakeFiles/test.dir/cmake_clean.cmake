@@ -3,6 +3,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/test.dir/src/ast.cpp.o.d"
   "CMakeFiles/test.dir/src/ast_printer.cpp.o"
   "CMakeFiles/test.dir/src/ast_printer.cpp.o.d"
+  "CMakeFiles/test.dir/src/codegen.cpp.o"
+  "CMakeFiles/test.dir/src/codegen.cpp.o.d"
   "CMakeFiles/test.dir/src/lex.cpp.o"
   "CMakeFiles/test.dir/src/lex.cpp.o.d"
   "CMakeFiles/test.dir/src/main.cpp.o"
